@@ -47,7 +47,7 @@ This project is envisioned as a full-stack MERN application.
 
 * **Frontend:** **React.js** (or Next.js) for a dynamic, component-based UI.
 * **Backend:** **Node.js** & **Express.js** for building the RESTful API.
-* **Database:** **MongoDB** (with Mongoose) to store university data, student accounts, and the lists of books each university owns.
+* **Database:** **PostgresSQL**  to store university data, student accounts, and the lists of books each university owns.
 * **Authentication:** **JWT (JSON Web Tokens)** for securing admin and student routes.
 * **External API:** **Google Books API** or **OpenLibrary API** for fetching comprehensive book data.
 
