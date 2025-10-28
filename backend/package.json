@@ -1,0 +1,29 @@
+{
+  "name": "unilibrary",
+  "version": "1.0.0",
+  "description": "UniLibrary Search is a web platform designed to bridge the gap between students and their university's library resources. It provides a simple interface for university libraries to manage their digital catalog and a powerful search tool for students to find books, check availability, and discover external e-book resources.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon backend/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Richa-2005/UniLibrary.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Richa-2005/UniLibrary/issues"
+  },
+  "homepage": "https://github.com/Richa-2005/UniLibrary#readme",
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "nodemon": "^3.1.10"
+  },
+  "devDependencies": {
+    "prisma": "^6.18.0"
+  }
+}
