@@ -1,4 +1,4 @@
-# UniLibrary Search 📚
+# UniLibrary 📚
 
 UniLibrary Search is a web platform designed to bridge the gap between students and their university's library resources. It provides a simple interface for university libraries to manage their digital catalog and a powerful search tool for students to find books, check availability, and discover external e-book resources.
 
