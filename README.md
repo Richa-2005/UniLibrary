@@ -84,3 +84,4 @@ To get a local copy up and running:
     ```
 
 ---
+Built with ☕️ by <strong>richa‑2005</strong> • Crafted for smarter campus libraries.
