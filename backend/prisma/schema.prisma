@@ -1,15 +1,65 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// This is Prisma schema file
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL") // This loads from your .env file
+}
+
+// Model for the University/Admin account
+model University {
+  id                String         @id @default(cuid())
+  name              String
+  adminEmail        String         @unique
+  adminPasswordHash String
+  
+  // A University has many students
+  students          Student[]
+  // A University has many entries in its library
+  libraryEntries    LibraryEntry[]
+}
+
+// Model for the Students
+model Student {
+  id          String     @id @default(cuid())
+  rollNumber  String
+  
+  // A Student belongs to one University
+  university    University @relation(fields: [universityId], references: [id])
+  universityId  String
+}
+
+// Model for the global list of books
+model Book {
+  id     String @id @default(cuid())
+  title  String
+  author String
+  isbn   String @unique // ISBN is a great unique identifier
+  
+  // This is the "magic" column for API data
+  // It uses the Postgres JSONB type!
+  metadata Json?  
+  
+  // This book can be in many university libraries
+  libraryEntries LibraryEntry[]
+}
+
+// This is the "Join Table" that links Universities and Books
+// It's where you store data ABOUT that relationship
+model LibraryEntry {
+  id       String @id @default(cuid())
+  semester Int?   // e.g., 5
+  year     Int?   // e.g., 3
+  status   String @default("available") // e.g., "available", "checked_out"
+
+  // Links to the University
+  university    University @relation(fields: [universityId], references: [id])
+  universityId  String
+
+  // Links to the Book
+  book    Book   @relation(fields: [bookId], references: [id])
+  bookId  String
 }

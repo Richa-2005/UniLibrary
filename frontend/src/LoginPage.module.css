@@ -1,0 +1,91 @@
+/* src/pages/LoginPage.module.css */
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--secondary-color);
+}
+
+.loginBox {
+  background: var(--bg-color);
+  padding: 2.5rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.loginBox h2 {
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.toggle {
+  display: flex;
+  background: var(--secondary-color);
+  border-radius: var(--border-radius);
+  margin-bottom: 1.5rem;
+  border: 1px solid #ddd;
+}
+
+.toggle button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #777;
+  border-radius: var(--border-radius);
+}
+
+.toggle button.active {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.inputGroup {
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.inputGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: var(--border-radius);
+  outline: none;
+}
+
+.inputGroup input:focus {
+  border-color: var(--primary-color);
+}
+
+.loginButton {
+  width: 100%;
+  padding: 0.85rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.loginButton:hover {
+  background-color: #004a80;
+}

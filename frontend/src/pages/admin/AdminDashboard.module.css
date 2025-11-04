@@ -1,0 +1,124 @@
+/* src/pages/admin/AdminDashboard.module.css */
+.dashboard {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem; /* Reduced padding for card layout */
+}
+
+.dashboard h1 {
+  text-align: center;
+  color: var(--primary-color);
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: var(--bg-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.searchBar {
+  display: flex;
+  margin-bottom: 1.5rem;
+}
+
+.searchBar input {
+  flex-grow: 1;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+  outline: none;
+}
+
+.searchBar input:focus {
+  border-color: var(--primary-color);
+}
+
+.searchBar button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+  cursor: pointer;
+}
+
+.apiResults {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.apiResult {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid var(--secondary-color);
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+}
+
+.apiResult h3, .apiResult p {
+  margin: 0;
+}
+
+.addButton {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.ownedList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.ownedBook {
+  background: var(--secondary-color);
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  padding: 1rem;
+}
+
+.ownedBook h3, .ownedBook p {
+  margin: 0 0 0.5rem 0;
+}
+
+.ownedBook span {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.toast {
+  position: fixed; /* Stays in view */
+  top: 80px; /* Below the navbar */
+  left: 50%;
+  transform: translateX(-50%); /* Center it */
+  background-color: #28a745; /* Success green */
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-weight: bold;
+  z-index: 2000; /* On top of everything */
+  animation: fadeInOut 3s ease-out;
+}
+
+/* Simple animation to fade in and out */
+@keyframes fadeInOut {
+  0% { top: 0; opacity: 0; }
+  20% { top: 80px; opacity: 1; }
+  80% { top: 80px; opacity: 1; }
+  100% { top: 0; opacity: 0; }
+}
