@@ -104,7 +104,12 @@ const StudentDashboard = () => {
         {notFound && (
           <>
             <h2>Not in your library.</h2>
-            {/* ... (externalLinks.map) ... */}
+            <p>Here are some external links where you might find it:</p>
+            {externalLinks.map(link => (
+              <a key={link.id} href={link.link} target="_blank" rel="noopener noreferrer" className={styles.externalLink}>
+                {link.title}
+              </a>
+            ))}
           </>
         )}
         
