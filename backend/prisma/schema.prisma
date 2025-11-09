@@ -1,65 +1,105 @@
-// This is Prisma schema file
+// This is your Prisma schema file
+
+datasource db {
+  provider = "postgresql" // We're using PostgreSQL
+  url      = env("DATABASE_URL")
+}
 
 generator client {
   provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL") // This loads from your .env file
 }
 
 // Model for the University/Admin account
 model University {
   id                String         @id @default(cuid())
   name              String
-  adminEmail        String         @unique
-  adminPasswordHash String
+  adminEmail        String         @unique // For admin login
+  adminPasswordHash String         // Stored hashed password
   
-  // A University has many students
-  students          Student[]
-  // A University has many entries in its library
-  libraryEntries    LibraryEntry[]
+  // --- Relationships ---
+  // A University has many Students
+  students        Student[]
+  // A University has many books in its library (via LibraryEntry)
+  libraryEntries  LibraryEntry[]
 }
 
 // Model for the Students
 model Student {
-  id          String     @id @default(cuid())
-  rollNumber  String
+  id           String   @id @default(cuid())
+  rollNumber   String   // For student login
   
-  // A Student belongs to one University
-  university    University @relation(fields: [universityId], references: [id])
-  universityId  String
+  // --- Relationships ---
+  // A Student belongs to ONE University
+  university   University @relation(fields: [universityId], references: [id])
+  universityId String
+  
+  // A Student can borrow many books
+  borrowedBooks BorrowedRecord[]
+  
+  // Ensures rollNumber is unique *per university*
+  @@unique([universityId, rollNumber])
 }
 
-// Model for the global list of books
+// Model for the *global* list of all possible books
+// This table just stores book data (title, author, etc.)
 model Book {
   id     String @id @default(cuid())
   title  String
   author String
-  isbn   String @unique // ISBN is a great unique identifier
+  isbn   String @unique // ISBN-13 or ISBN-10
   
   // This is the "magic" column for API data
-  // It uses the Postgres JSONB type!
+  // It stores the raw JSON from Google Books (cover, description, etc.)
   metadata Json?  
   
+  // --- Relationships ---
   // This book can be in many university libraries
   libraryEntries LibraryEntry[]
 }
 
-// This is the "Join Table" that links Universities and Books
-// It's where you store data ABOUT that relationship
+// This is the *most important* table.
+// It connects a University to a Book.
 model LibraryEntry {
   id       String @id @default(cuid())
-  semester Int?   // e.g., 5
-  year     Int?   // e.g., 3
-  status   String @default("available") // e.g., "available", "checked_out"
+  
+  // --- Relationships ---
+  // It belongs to ONE University
+  university   University @relation(fields: [universityId], references: [id])
+  universityId String
+  // It references ONE Book
+  book         Book       @relation(fields: [bookId], references: [id])
+  bookId       String
+  
+  // --- Data for this specific library's book ---
+  semester Int? // e.g., 5
+  year     Int? // e.g., 3
+  
+  // Manages inventory
+  totalCopies     Int @default(1)
+  availableCopies Int @default(1)
+  
+  // --- Relationships ---
+  // This entry can be borrowed many times
+  borrowedRecords BorrowedRecord[]
+  
+  // Ensures a university can't add the same book twice
+  @@unique([universityId, bookId])
+}
 
-  // Links to the University
-  university    University @relation(fields: [universityId], references: [id])
-  universityId  String
-
-  // Links to the Book
-  book    Book   @relation(fields: [bookId], references: [id])
-  bookId  String
+// This table tracks *who* borrowed *which* book
+model BorrowedRecord {
+  id           String    @id @default(cuid())
+  
+  // --- Relationships ---
+  // Belongs to ONE student
+  student      Student   @relation(fields: [studentId], references: [id])
+  studentId    String
+  // Refers to ONE library book entry
+  libraryEntry LibraryEntry @relation(fields: [libraryEntryId], references: [id])
+  libraryEntryId String
+  
+  // --- Data for this specific loan ---
+  borrowedAt   DateTime  @default(now())
+  dueDate      DateTime
+  returnedAt   DateTime? // Null if not yet returned
 }
