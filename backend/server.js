@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
-import getRoutes from './routes/adminRoutes.js';
+
+import getRoutesAdmin from './routes/adminRoutes.js';
 
 dotenv.config();
 
@@ -16,7 +17,7 @@ app.use(express.json());
 const prisma = new PrismaClient();
 
 
-app.get('/api',getRoutes);
+app.get('/api/admin',getRoutesAdmin);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the UniLibrary API!');

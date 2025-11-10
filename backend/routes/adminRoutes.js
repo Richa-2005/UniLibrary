@@ -1,8 +1,13 @@
 import express from 'express';
-import {adminRegister} from '../controllers/adminControllers.js';
-const getRoutes = express.Router()
+import {adminRegister,checkIn,loginAdmin} from '../controllers/adminControllers.js';
+import { searchBooks } from '../controllers/adminFeatures.js';
+import { protect } from '../middleware/auth.js'
+const getRoutesAdmin = express.Router()
 
-getRoutes.post('/register-admin', adminRegister);
+getRoutesAdmin.post('/register', adminRegister);
+getRoutesAdmin.get('/login',loginAdmin);
+getRoutesAdmin.get('/me',protect, checkIn);
 
+getRoutesAdmin.get('/search-books',protect,searchBooks);
 
-export default getRoutes
+export default getRoutesAdmin
