@@ -45,3 +45,84 @@ export const searchBooks = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch data from Google Books API.' });
   }
 };
+
+// @desc    Add a book to the university's library
+// @route   POST /api/admin/add-book
+// @access  Private (Admin only)
+export const addBookToLibrary = async (req, res) => {
+  // 1. Get data from the admin's request
+  // The admin's frontend will send this
+  const { googleBookId, semester, year } = req.body;
+  
+  // Get the admin's university ID from our 'protect' middleware
+  const { universityId } = req.user;
+
+  if (!googleBookId) {
+    return res.status(400).json({ error: 'Google Book ID is required.' });
+  }
+
+  try {
+    // 2. Fetch *full* details for this specific book
+    const API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
+    const URL = `https://www.googleapis.com/books/v1/volumes/${googleBookId}?key=${API_KEY}`;
+    
+    const { data: volumeData } = await axios.get(URL);
+    const { volumeInfo } = volumeData;
+
+    if (!volumeInfo) {
+      return res.status(404).json({ error: 'Book details not found.' });
+    }
+
+    // 3. Find or create the book in our *global* `Book` table
+    // We use the ISBN to see if we already have this book
+    const isbn = volumeInfo.industryIdentifiers?.find(
+      (i) => i.type === 'ISBN_13'
+    )?.identifier || volumeInfo.industryIdentifiers?.[0]?.identifier;
+    
+    if (!isbn) {
+      return res.status(400).json({ error: 'Book has no ISBN. Cannot add.' });
+    }
+
+    const book = await prisma.book.upsert({
+      where: { isbn: isbn },
+      //if not exisitng
+      create: {
+        title: volumeInfo.title,
+        author: volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Unknown',
+        isbn: isbn,
+        metadata: volumeInfo, //storing all the data
+      },
+      //if already existing
+      update: {},
+    });
+
+    // 4. Check if the book is *already* in this university's library
+    const existingEntry = await prisma.libraryEntry.findUnique({
+      where: {
+        universityId_bookId: { universityId, bookId: book.id },
+      },
+    });
+
+    if (existingEntry) {
+      return res.status(409).json({ error: 'This book is already in your library.' });
+    }
+
+    // 5. Add the book to the university's `LibraryEntry` table
+    const newLibraryEntry = await prisma.libraryEntry.create({
+      data: {
+        universityId: universityId,
+        bookId: book.id,
+        semester: semester ? parseInt(semester) : null,
+        year: year ? parseInt(year) : null,
+        totalCopies: 1,
+        availableCopies: 1,
+      },
+    });
+
+    res.status(201).json(newLibraryEntry);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while adding book.' });
+  }
+};
