@@ -126,3 +126,45 @@ export const addBookToLibrary = async (req, res) => {
     res.status(500).json({ error: 'Server error while adding book.' });
   }
 };
+
+// @desc    Get all books currently in the admin's university library
+// @route   GET /api/admin/my-books
+// @access  Private (Admin only)
+export const getMyLibraryBooks = async (req, res) => {
+  
+  const { universityId } = req.user;
+
+  try {
+    //Find all `LibraryEntry` records for university
+    const libraryEntries = await prisma.libraryEntry.findMany({
+      where: {
+        universityId: universityId,
+      },
+      // 2. Use `include` to also fetch the related `Book` data
+      // This "joins" the `LibraryEntry` table with the `Book` table
+      include: {
+        book: true, 
+      },
+    });
+
+    // book data
+    const books = libraryEntries.map((entry) => ({
+      libraryEntryId: entry.id,
+      title: entry.book.title,
+      author: entry.book.author,
+      isbn: entry.book.isbn,
+      semester: entry.semester,
+      year: entry.year,
+      totalCopies: entry.totalCopies,
+      availableCopies: entry.availableCopies,
+      // We also send the metadata, which has the description, etc.
+      metadata: entry.book.metadata, 
+    }));
+
+    res.status(200).json(books);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while fetching library books.' });
+  }
+};
