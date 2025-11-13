@@ -140,8 +140,7 @@ export const getMyLibraryBooks = async (req, res) => {
       where: {
         universityId: universityId,
       },
-      // 2. Use `include` to also fetch the related `Book` data
-      // This "joins" the `LibraryEntry` table with the `Book` table
+      // "Joining" the `LibraryEntry` table with the `Book` table to book metadata
       include: {
         book: true, 
       },
@@ -166,5 +165,92 @@ export const getMyLibraryBooks = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error while fetching library books.' });
+  }
+};
+
+// @desc    Update a book's details in the admin's library
+// @route   PUT /api/admin/my-books/:id
+// @access  Private (Admin only)
+export const updateLibraryBook = async (req, res) => {
+  try {
+    const { id: libraryEntryId } = req.params;
+    
+    //data of the book clicked which was given by admin, the updated data
+    const { semester, year, totalCopies, availableCopies } = req.body;
+
+    const { universityId } = req.user;
+
+    // Ensure the LibraryEntry belongs to the admin's university
+    const entry = await prisma.libraryEntry.findFirst({
+      where: {
+        id: libraryEntryId,
+        universityId: universityId, 
+      },
+    });
+
+    if (!entry) {
+      return res.status(404).json({ error: 'Book entry not found in your library.' });
+    }
+
+    // 5. Prepare the data for update
+    const dataToUpdate = {};
+    if (semester !== undefined) dataToUpdate.semester = parseInt(semester);
+    if (year !== undefined) dataToUpdate.year = parseInt(year);
+    if (totalCopies !== undefined) dataToUpdate.totalCopies = parseInt(totalCopies);
+    if (availableCopies !== undefined) dataToUpdate.availableCopies = parseInt(availableCopies);
+
+    // 6. Update the entry
+    const updatedEntry = await prisma.libraryEntry.update({
+      where: {
+        id: libraryEntryId,
+      },
+      data: dataToUpdate,
+    });
+
+    res.status(200).json(updatedEntry);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while updating book.' });
+  }
+};
+
+// @desc    Delete a book entry from the admin's library
+// @route   DELETE /api/admin/my-books/:id
+// @access  Private (Admin only)
+export const removeLibraryBook = async (req, res) => {
+  try {
+   
+    const { id: libraryEntryId } = req.params;
+
+    const { universityId } = req.user;
+
+    const entry = await prisma.libraryEntry.findFirst({
+      where: {
+        id: libraryEntryId,
+        universityId: universityId,
+      },
+    });
+
+    if (!entry) {
+      return res.status(404).json({ error: 'Book entry not found in your library.' });
+    }
+    
+    //sql query to delete by id
+    await prisma.libraryEntry.delete({
+      where: {
+        id: libraryEntryId,
+      },
+    });
+
+    res.status(200).json({ message: 'Book removed from library successfully.' });
+
+  } catch (error) {
+    console.error(error);
+    // if a book is still on loan, Foreign key constraint fail.
+    if (error.code === 'P2003') {
+      return res.status(409).json({ error: 'Cannot delete this book. It may still be on loan by students.' });
+    }
+    res.status(500).json({ error: 'Server error while removing book.' });
   }
 };
