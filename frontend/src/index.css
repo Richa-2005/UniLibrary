@@ -1,11 +1,18 @@
-/* src/index.css */
+/* For global color palette  */
 :root {
-  --primary-color: #005a9e;
-  --secondary-color: #f4f4f4;
-  --text-color: #333;
-  --bg-color: #ffffff;
+
+  --primary-color: #B87C4C;    /* Leather Brown */
+  --secondary-color: #A8BBA3;  /* Muted Green */
+  --accent-color: #C4A484;     /* Tan Paper */
+  --bg-color: #F7F1DE;         /* Cream/Ivory Background */
+  --surface-color: #FFFFFF;    /* White for cards, to pop against the cream */
+
+  /* --- Text & Utility --- */
+  --text-color: #4A3F35;       /* Dark Brown (for high contrast) */
+  --text-light: #7a6e61;     /* Lighter text for subheadings */
+  --border-color: #e0d8c3;    /* A light border color */
   --border-radius: 8px;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 12px rgba(74, 63, 53, 0.1);
 }
 
 body {
@@ -15,10 +22,18 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--secondary-color);
+  background-color: var(--bg-color);
   color: var(--text-color);
 }
 
 * {
   box-sizing: border-box;
+}
+
+.card {
+  background: var(--surface-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './Navbar.module.css';
 import { Link, useNavigate } from 'react-router-dom';
-import ProfileSidebar from './ProfileSidebar'; // Import the new sidebar component
+import ProfileSidebar from '../ProfileSidebar'; // Import the new sidebar component
 
 const Navbar = () => {
   const navigate = useNavigate();
