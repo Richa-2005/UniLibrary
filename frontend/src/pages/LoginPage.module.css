@@ -1,20 +1,58 @@
-/* src/pages/LoginPage.module.css */
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4); 
+  backdrop-filter: blur(2px); 
+  z-index: 0; 
+}
+
 .container {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: var(--secondary-color);
+  background-color: var(--bg-color);
+  padding: 2rem;
+
+  background-image: url('/images/library.png'); 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  
+}
+.contentWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items:center; 
+  width: 100%;
+  max-width: 900px;
+}
+
+
+.glassCard {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  padding: 2.5rem;
 }
 
 .loginBox {
-  background: var(--bg-color);
-  padding: 2.5rem 2rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
   width: 100%;
   max-width: 400px;
   text-align: center;
+  position: relative; 
+  z-index: 1; 
+  background-color: rgba(255, 255, 255, 0.9); 
+  padding: 2rem;
+  margin-left: 2rem;
 }
 
 .loginBox h2 {
@@ -23,54 +61,32 @@
   margin-bottom: 1.5rem;
 }
 
-.toggle {
-  display: flex;
-  background: var(--secondary-color);
-  border-radius: var(--border-radius);
-  margin-bottom: 1.5rem;
-  border: 1px solid #ddd;
-}
-
-.toggle button {
-  flex: 1;
-  padding: 0.75rem;
-  border: none;
-  background: transparent;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  color: #777;
-  border-radius: var(--border-radius);
-}
-
-.toggle button.active {
-  background: var(--primary-color);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .inputGroup {
   text-align: left;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .inputGroup label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
+  color: var(--text-light);
 }
 
 .inputGroup input {
   width: 100%;
   padding: 0.75rem 1rem;
   font-size: 1rem;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border-color);
   border-radius: var(--border-radius);
   outline: none;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .inputGroup input:focus {
   border-color: var(--primary-color);
+  background-color: var(--surface-color);
 }
 
 .loginButton {
@@ -83,9 +99,88 @@
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, opacity 0.2s;
+  margin-top: 1rem;
 }
 
 .loginButton:hover {
-  background-color: #004a80;
+  background-color: #a16b41; 
+}
+
+.loginButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.toggleText {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  font-weight: bold;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
+
+.toggleButton:hover {
+  text-decoration: underline;
+}
+
+.infoSection {
+  flex: 1; 
+  color: #FFFFFF; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.mainTitle {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--accent-color); 
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 1rem;
+}
+
+.tagline {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1.5rem;
+  font-weight: bolder;
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
 }

@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
       // If we have a token, let's verify it with the server
       api.get('/admin/me')
         .then(response => {
-          // Token is valid, Set the user
+          // Token is valid, Set the user //data sent by checkIn
           setUser({ name: response.data.name, email: response.data.adminEmail });
         })
         .catch(() => {
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (email, password) => {
 
-    // This will hit http://localhost:5000/api/login-admin
+    // This will hit http://localhost:5000/api/login-admin //send new token
     const response = await api.post('/admin/login', { adminEmail: email, password });
     
     // Save token and user
