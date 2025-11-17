@@ -17,7 +17,7 @@ app.use(express.json());
 const prisma = new PrismaClient();
 
 
-app.get('/api/admin',getRoutesAdmin);
+app.use('/api/admin',getRoutesAdmin);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the UniLibrary API!');

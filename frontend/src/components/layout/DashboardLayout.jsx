@@ -1,15 +1,14 @@
 import React from 'react';
-import Navbar from './NavBar.jsx';
 import { Outlet } from 'react-router-dom';
+import Navbar from './NavBar.jsx';
+import styles from './DashboardLayout.module.css';
 
-// This component wraps all our dashboard pages
 const DashboardLayout = () => {
   return (
-    <div>
+    <div className={styles.layout}>
       <Navbar />
-      <main>
-        {/* <Outlet> renders the child route (e.g., StudentDashboard) */}
-        <Outlet />
+      <main className={styles.content}>
+        <Outlet /> {/* This is where your page (e.g., AdminDashboard) will be rendered */}
       </main>
     </div>
   );

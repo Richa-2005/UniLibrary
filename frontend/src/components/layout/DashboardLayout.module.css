@@ -1,0 +1,15 @@
+/* src/components/layout/DashboardLayout.module.css */
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg-color); /* Cream/Ivory Background */
+}
+
+.content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 2rem auto; /* Top/bottom and auto left/right */
+  padding: 0 2rem;
+  flex-grow: 1;
+}

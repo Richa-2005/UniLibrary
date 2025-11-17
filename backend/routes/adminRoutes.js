@@ -5,7 +5,7 @@ import { protect } from '../middleware/auth.js'
 const getRoutesAdmin = express.Router()
 
 getRoutesAdmin.post('/register', adminRegister);
-getRoutesAdmin.get('/login',loginAdmin);
+getRoutesAdmin.post('/login',loginAdmin);
 getRoutesAdmin.get('/me',protect, checkIn);
 
 getRoutesAdmin.get('/search-books',protect,searchBooks);
