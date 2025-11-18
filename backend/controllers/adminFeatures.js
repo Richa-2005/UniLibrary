@@ -8,21 +8,24 @@ const prisma = new PrismaClient();
 // @access  Private (Admin only)
 export const searchBooks = async (req, res) => {
   // Get the search term from the query params (e.g., /search-books?q=algorithms)
-  const { q } = req.query;
+  const { q, startIndex = 0 } = req.query;
 
   if (!q) {
     return res.status(400).json({ error: 'Search query (q) is required.' });
   }
 
   const API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
-  const URL = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&key=${API_KEY}`;
-
+  const URL = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&startIndex=${startIndex}&maxResults=10&key=${API_KEY}`;
   try {
     const { data } = await axios.get(URL);
 
-    // The API returns a lot of data. We only want the items.
     if (!data.items) {
-      return res.status(404).json({ message: 'No books found.' });
+      // If it's the first page, means no books at all. 
+      if (parseInt(startIndex) === 0) {
+         return res.status(404).json({ message: 'No books found.' });
+      } else { //number of books ended
+         return res.status(200).json([]); // Return empty list for "end of results"
+      }
     }
 
     // Clean up the data to send to the frontend
