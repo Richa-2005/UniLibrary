@@ -1,124 +1,110 @@
 /* src/pages/admin/AdminDashboard.module.css */
-.dashboard {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 1rem; /* Reduced padding for card layout */
+
+.dashboardContainer {
+  /* Uses global layout padding, but we can add specific spacing here */
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-.dashboard h1 {
-  text-align: center;
+/* Header */
+.header h1 {
+  font-size: 2.5rem;
   color: var(--primary-color);
-  margin-bottom: 2rem;
-}
-
-.card {
-  background: var(--bg-color);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  padding: 2rem;
-  margin-bottom: 2rem;
-}
-
-.searchBar {
-  display: flex;
-  margin-bottom: 1.5rem;
-}
-
-.searchBar input {
-  flex-grow: 1;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  border: 2px solid #ddd;
-  border-radius: var(--border-radius) 0 0 var(--border-radius);
-  outline: none;
-}
-
-.searchBar input:focus {
-  border-color: var(--primary-color);
-}
-
-.searchBar button {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: bold;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 0 var(--border-radius) var(--border-radius) 0;
-  cursor: pointer;
-}
-
-.apiResults {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.apiResult {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border: 1px solid var(--secondary-color);
-  border-radius: var(--border-radius);
   margin-bottom: 0.5rem;
 }
 
-.apiResult h3, .apiResult p {
-  margin: 0;
+.date {
+  color: var(--text-light);
+  font-size: 1rem;
 }
 
-.addButton {
-  background: #28a745;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.ownedList {
+/* Stats Grid */
+.statsGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
 }
 
-.ownedBook {
-  background: var(--secondary-color);
-  border: 1px solid #e0e0e0;
+.statCard {
+  background-color: var(--surface-color);
+  padding: 1.5rem;
   border-radius: var(--border-radius);
-  padding: 1rem;
+  box-shadow: var(--shadow);
+  border-left: 5px solid var(--primary-color); /* Nice accent line */
+  transition: transform 0.2s;
 }
 
-.ownedBook h3, .ownedBook p {
-  margin: 0 0 0.5rem 0;
+.statCard:hover {
+  transform: translateY(-3px);
 }
 
-.ownedBook span {
+.statCard h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.statNumber {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--text-color);
+  margin: 0.5rem 0;
+}
+
+.statLabel {
   font-size: 0.9rem;
-  font-weight: bold;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.tab:hover {
   color: var(--primary-color);
 }
 
-.toast {
-  position: fixed; /* Stays in view */
-  top: 80px; /* Below the navbar */
-  left: 50%;
-  transform: translateX(-50%); /* Center it */
-  background-color: #28a745; /* Success green */
-  color: white;
-  padding: 1rem 1.5rem;
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  font-weight: bold;
-  z-index: 2000; /* On top of everything */
-  animation: fadeInOut 3s ease-out;
+.activeTab {
+  color: var(--primary-color);
 }
 
-/* Simple animation to fade in and out */
-@keyframes fadeInOut {
-  0% { top: 0; opacity: 0; }
-  20% { top: 80px; opacity: 1; }
-  80% { top: 80px; opacity: 1; }
-  100% { top: 0; opacity: 0; }
+/* The animated underline for the active tab */
+.activeTab::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; /* Align with border-bottom */
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--primary-color);
+  border-radius: 2px 2px 0 0;
+}
+
+/* Content Area */
+.contentArea {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
