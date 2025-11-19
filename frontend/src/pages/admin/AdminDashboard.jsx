@@ -34,7 +34,7 @@ const AdminDashboard = () => {
     <div className={styles.dashboardContainer}>
       
       <header className={styles.header}>
-        <h1>Dashboard</h1>
+        <h1>Welcome, {user?.name || 'User'}</h1>
         <p className={styles.date}>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p> 
         {/* date */}
       </header>

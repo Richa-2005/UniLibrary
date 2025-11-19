@@ -20,7 +20,7 @@ const Navbar = () => {
           
           <div className={styles.navMenu}>
             <span className={styles.welcomeText}>
-              Welcome, {user?.name || 'User'}
+              Dashboard
             </span>
             
             
