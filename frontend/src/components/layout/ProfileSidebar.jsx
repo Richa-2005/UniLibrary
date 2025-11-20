@@ -25,23 +25,25 @@ const ProfileSidebar = ({ isOpen, onClose, user, onLogout }) => {
             {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
           </div>
           
-          <div className={styles.detailGroup}>
-            <label>Name</label>
-            <p>{user?.name || 'N/A'}</p>
-          </div>
 
-          <div className={styles.detailGroup}>
-            <label>Email</label>
-            <p>{user?.email || 'N/A'}</p>
-          </div>
-
-          {/* Only show University if it exists (Admin) */}
           {user?.name && ( 
              <div className={styles.detailGroup}>
                <label>University/Organization</label>
                <p>{user.name}</p> 
              </div>
           )}
+
+          <div className={styles.detailGroup}>
+            <label>Email</label>
+            <p>{user?.email || 'N/A'}</p>
+          </div>
+
+          {/* Field 3: Role */}
+          <div className={styles.detailGroup}>
+            <label>Account Role</label>
+            <p>Administrator</p> 
+          </div>
+        
         </div>
 
         {/* Footer with Logout */}
