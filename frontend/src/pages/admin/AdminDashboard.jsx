@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import styles from './AdminDashboard.module.css';
@@ -9,27 +9,34 @@ import InventorySection from './components/InventorySection';
 const AdminDashboard = () => {
   const { user } = useAuth(); //get user details
   const [activeTab, setActiveTab] = useState('inventory'); // 'inventory' or 'add'
-  const [stats, setStats] = useState({ totalBooks: 0, totalCopies: 0 }); //initally before getting them
+  const [stats, setStats] = useState({ totalBooks: 0, totalCopies: 0, activeLoans: 0 }); 
 
-  // Fetch stats on load (We'll calculate this from the full list for now)
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await api.get('/admin/my-books');
-        const books = response.data;
-        
-        // Calculate stats
-        const totalTitles = books.length;
-        const totalCopies = books.reduce((sum, book) => sum + (book.totalCopies || 0), 0);
-        
-        setStats({ totalBooks: totalTitles, totalCopies });
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-      }
-    };
-    fetchStats();
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await api.get('/admin/my-books');
+      const books = response.data;
+      
+      const totalTitles = books.length;
+      
+      // Calculate Total Physical Copies
+      const totalCopies = books.reduce((sum, book) => sum + (book.totalCopies || 0), 0);
+      
+      // Calculate Currently Available
+      const currentAvailable = books.reduce((sum, book) => sum + (book.availableCopies || 0), 0);
+
+      // Active Loans = Total - Available
+      const activeLoans = totalCopies - currentAvailable;
+      
+      setStats({ totalBooks: totalTitles, totalCopies, activeLoans });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
   }, []);
 
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
   return (
     <div className={styles.dashboardContainer}>
       
@@ -53,7 +60,7 @@ const AdminDashboard = () => {
         </div>
         <div className={styles.statCard}>
           <h3>Active Loans</h3>
-          <p className={styles.statNumber}>-</p> 
+          <p className={styles.statNumber}>{stats.activeLoans}</p> 
           <span className={styles.statLabel}>Students with books</span>
         </div>
       </div>
@@ -75,7 +82,7 @@ const AdminDashboard = () => {
       </div>
 
       <div className={styles.contentArea}>
-        {activeTab === 'inventory' ? <InventorySection /> : <AddBookSection />}
+        {activeTab === 'inventory' ? <InventorySection onInventoryUpdate={fetchStats} /> : <AddBookSection />}
       </div>
     </div>
   );

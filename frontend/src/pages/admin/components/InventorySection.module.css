@@ -1,0 +1,249 @@
+/* src/pages/admin/components/InventorySection.module.css */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Controls Area */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.controls h2 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.countBadge {
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+  vertical-align: middle;
+}
+
+.searchBar {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  width: 300px;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.searchBar:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(184, 124, 76, 0.1);
+}
+
+/* Table Container (Card style) */
+.tableContainer {
+  background: var(--surface-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  overflow-x: auto; /* Scrollable on mobile */
+  border: 1px solid var(--border-color);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.table th {
+  text-align: left;
+  padding: 1rem 1.5rem;
+  background-color: #f8f6f2; /* Light cream header */
+  color: var(--text-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+  color: var(--text-color);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover {
+  background-color: #faf9f6; /* Subtle hover effect */
+}
+
+/* Column Specifics */
+.titleCol {
+  display: flex;
+  flex-direction: column;
+}
+.titleCol strong {
+  font-size: 1rem;
+  color: var(--primary-color);
+}
+.titleCol span {
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.tagGroup {
+  display: flex;
+  gap: 0.5rem;
+}
+.tag {
+  background-color: #e9e9e9;
+  color: #555;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.stockStatus {
+  display: flex;
+  flex-direction: column;
+}
+.inStock {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+.lowStock {
+  color: #dc3545;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+.totalLabel {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.center {
+  text-align: center;
+}
+
+/* Actions Buttons */
+.editBtn {
+  background: none;
+  border: 1px solid var(--border-color);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  color: var(--text-color);
+  cursor: pointer;
+  margin-right: 0.5rem;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+.editBtn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #dc3545; /* Red */
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  vertical-align: middle;
+  padding: 0 0.5rem;
+  transition: transform 0.2s;
+}
+.deleteBtn:hover {
+  transform: scale(1.2);
+}
+
+.loading, .empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+.stockControl {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Status Badges */
+.statusBadgeGreen, .statusBadgeRed {
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+  text-transform: uppercase;
+}
+
+.statusBadgeGreen {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.statusBadgeRed {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Button Group for +/- */
+.buttonGroup {
+  display: flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.stockBtn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  color: var(--primary-color);
+  transition: background 0.2s;
+}
+
+.stockBtn:hover:not(:disabled) {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.stockBtn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.stockCount {
+  font-size: 0.9rem;
+  font-family: monospace;
+  padding: 0 0.6rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
