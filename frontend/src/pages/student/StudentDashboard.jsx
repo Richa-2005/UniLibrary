@@ -1,127 +1,105 @@
 import React, { useState } from 'react';
-import styles from './StudentDashboard.module.css';
-
-// --- MOCK DATA FOR SCREENSHOTS ---
-// 1. Results when a book IS found in the library
-const libraryResults = [
-  { id: 1, title: 'Introduction to Algorithms', author: 'CLRS', status: 'Available', semester: 5 },
-  { id: 2, title: 'Operating System Concepts', author: 'Silberschatz', status: 'Available', semester: 4 },
-  { id: 3, title: 'Database System Concepts', author: 'Korth', status: 'Checked Out', semester: 4 },
-  { id: 4, title: 'Computer Networks', author: 'Tanenbaum', status: 'Available', semester: 5 },
-];
-
-// 2. Results when a book IS NOT found (external links)
-const externalLinks = [
-  { id: 1, title: 'Project Hail Mary by Andy Weir', link: 'https://www.google.com/books' },
-  { id: 2, title: 'The Three-Body Problem by Cixin Liu', link: 'https://www.google.com/books' },
-];
-// --- END MOCK DATA ---
-
+import api from '../../services/api';
+import styles from '../admin/components/AddBookSection.module.css'; // Re-use Admin styles for cards!
 
 const StudentDashboard = () => {
-  const [searchTerm, setSearchTerm] = useState('algorithms'); // Pre-fill search
-  
-  // To show different states for screenshots, you can change this!
-  // To show "Found": setResults(libraryResults) and setNotFound(false)
-  // To show "Not Found": setResults([]) and setNotFound(true)
-  const [results, setResults] = useState(null); // Pre-fill results
-  const [notFound, setNotFound] = useState(false); // Start by showing results
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false); // To show "No results" only after searching
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    setNotFound(false);
-    
-    // --- Mock Search Logic ---
-    if (searchTerm.toLowerCase().includes('algorithms')) {
-      setResults(libraryResults); // Use the mock data we made
-    } else if (searchTerm.toLowerCase().includes('martian')) {
-      setResults([]);
-      setNotFound(true);
-    } else {
-      setResults([]); // No matches found
+    if (!query.trim()) return;
+
+    setLoading(true);
+    setSearched(true);
+    try {
+      // Call our new Student Search API
+      const response = await api.get(`/student/search?q=${encodeURIComponent(query)}`);
+      setResults(response.data);
+    } catch (error) {
+      console.error(error);
+      alert("Search failed.");
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
-    <div className={styles.dashboard}>
-      <header className={styles.header}>
-        <h1>Welcome, Student!</h1>
-        <p>Search for books in your university library.</p>
-      </header>
-
-      <form className={styles.searchBar} onSubmit={handleSearch}>
-        <input 
-          type="text"
-          placeholder="Search by title, author, or semester..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button type="submit">Search</button>
-      </form>
-
-      {/* --- This is the new "filter" section, just for looks --- */}
-      <div className={styles.filterBar}>
-        <strong>Filters:</strong>
-        <button className={styles.filterButtonActive}>All</button>
-        <button className={styles.filterButton}>Semester 5</button>
-        <button className={styles.filterButton}>Semester 4</button>
-        <button className={styles.filterButton}>Available Only</button>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      
+      {/* 1. Welcome / Search Header */}
+      <div className="card" style={{ padding: '2rem', textAlign: 'center' }}>
+        <h1 style={{ color: 'var(--primary-color)', marginTop: 0 }}>Find Your Next Book</h1>
+        <form onSubmit={handleSearch} style={{ display: 'flex', maxWidth: '600px', margin: '1rem auto', gap: '1rem' }}>
+          <input 
+            type="text" 
+            placeholder="Search by Title, Author, or ISBN..." 
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', border: '1px solid #ccc' }}
+          />
+          <button 
+            type="submit" 
+            style={{ padding: '0.8rem 2rem', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+            disabled={loading}
+          >
+            {loading ? '...' : 'Search'}
+          </button>
+        </form>
       </div>
 
-     <div className={styles.results}>
-        {/* --- JSX LOGIC UPDATE --- */}
+      {/* 2. Results Area */}
+      <div>
+        {results.length > 0 && <h2 style={{ color: 'var(--text-color)' }}>Search Results</h2>}
+        
+        <div className={styles.resultsGrid}>
+          {results.map((book) => (
+            <div key={book.libraryEntryId} className={styles.bookCard}>
+              <div className={styles.cardImageWrapper}>
+                {book.thumbnail ? (
+                  <img src={book.thumbnail} alt={book.title} />
+                ) : (
+                  <div className={styles.noImage}>No Image</div>
+                )}
+              </div>
+              
+              <div className={styles.cardInfo}>
+                <h4>{book.title}</h4>
+                <p>{book.author}</p>
+                
+                {/* Availability Badge */}
+                <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <span style={{ 
+                     fontSize: '0.8rem', 
+                     fontWeight: 'bold', 
+                     color: book.status === 'Available' ? '#155724' : '#721c24',
+                     backgroundColor: book.status === 'Available' ? '#d4edda' : '#f8d7da',
+                     padding: '2px 8px',
+                     borderRadius: '10px'
+                   }}>
+                     {book.status}
+                   </span>
+                   <span style={{ fontSize: '0.75rem', color: '#666' }}>
+                     Sem {book.semester}
+                   </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
-        {/* State 1: Before any search (NEW) */}
-        {results === null && (
-          <div className={styles.emptyState}>
-            <h3>Find Your Next Book</h3>
-            <p>Use the search bar above to find books by title, author, or semester.</p>
-            {/* You could add an icon/image here */}
+        {/* Empty State */}
+        {searched && !loading && results.length === 0 && (
+          <div style={{ textAlign: 'center', color: '#888', marginTop: '2rem' }}>
+            <h3>No books found in the library.</h3>
+            {/* Fallback Link Logic would go here */}
+            <p>Try searching for a different title.</p>
           </div>
         )}
-
-        {/* State 2: Results are found */}
-        {results && results.length > 0 && (
-          <>
-            <h2>Library Results</h2>
-            {results.map(book => (
-      <div key={book.id} className={styles.bookCard}>
-        <div className={styles.bookInfo}>
-          <h3>{book.title}</h3>
-          <p>by {book.author}</p>
-        </div>
-        <div className={styles.bookStatus}>
-          <span className={book.status === 'Available' ? styles.available : styles.notAvailable}>
-            {book.status}
-          </span>
-          <span className={styles.semesterTag}>Sem {book.semester}</span>
-        </div>
       </div>
-    ))}
-          </>
-        )}
 
-        {/* State 3: Book is not found (external links) */}
-        {notFound && (
-          <>
-            <h2>Not in your library.</h2>
-            <p>Here are some external links where you might find it:</p>
-            {externalLinks.map(link => (
-              <a key={link.id} href={link.link} target="_blank" rel="noopener noreferrer" className={styles.externalLink}>
-                {link.title}
-              </a>
-            ))}
-          </>
-        )}
-        
-        {/* State 4: No results found */}
-        {results && results.length === 0 && !notFound && (
-           <div className={styles.noResults}>
-             <h3>No results found.</h3>
-             <p>Try searching for a different title or author.</p>
-           </div>
-        )}
-        {/* --- END JSX LOGIC --- */}
-      </div>
     </div>
   );
 };

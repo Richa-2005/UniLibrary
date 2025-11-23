@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 
 import getRoutesAdmin from './routes/adminRoutes.js';
+import getRouterStudent from './routes/studentRoutes.js';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ const prisma = new PrismaClient();
 
 
 app.use('/api/admin',getRoutesAdmin);
+app.use('/api/student',getRouterStudent);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the UniLibrary API!');

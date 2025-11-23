@@ -1,11 +1,11 @@
 import { Route, Routes } from 'react-router-dom'
 import React from 'react'
 import ProtectedRoute from './components/common/ProtectedRoute';
-// import StudentDashboard from './pages/student/StudentDashboard.jsx'
+import StudentDashboard from './pages/student/StudentDashboard.jsx'
 import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import DashboardLayout from './components/layout/DashboardLayout';
-// import DashboardLayout from './com'
+import StudentLayout from './components/layout/StudentLayout';
 
 export default function App() {
   return (
@@ -23,10 +23,11 @@ export default function App() {
       >
         
         <Route path="dashboard" element={<AdminDashboard />} />
-        {/* <Route path="manage-students" element={<ManageStudentsPage />} /> */}
-        {/* <Route path="settings" element={<SettingsPage />} /> */}
       </Route>
-        
+      
+        <Route path="/student" element={<StudentLayout />}>
+         <Route path="dashboard" element={<StudentDashboard />} />
+      </Route>
       </Routes>
   )
 }

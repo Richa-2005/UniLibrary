@@ -1,5 +1,5 @@
 import express from 'express';
-import {adminRegister,checkIn,loginAdmin} from '../controllers/adminControllers.js';
+import {adminRegister,checkIn,loginAdmin,registerStudentByAdmin,getMyStudents, deleteStudent} from '../controllers/adminControllers.js';
 import { searchBooks,addBookToLibrary,getMyLibraryBooks,updateLibraryBook,removeLibraryBook } from '../controllers/adminFeatures.js';
 import { protect } from '../middleware/auth.js'
 const getRoutesAdmin = express.Router()
@@ -7,6 +7,9 @@ const getRoutesAdmin = express.Router()
 getRoutesAdmin.post('/register', adminRegister);
 getRoutesAdmin.post('/login',loginAdmin);
 getRoutesAdmin.get('/me',protect, checkIn);
+getRoutesAdmin.post('/add-student', protect, registerStudentByAdmin);
+getRoutesAdmin.get('/my-students', protect, getMyStudents);
+getRoutesAdmin.delete('/student/:id', protect, deleteStudent);
 
 getRoutesAdmin.get('/search-books',protect,searchBooks);
 getRoutesAdmin.post('/add-book', protect, addBookToLibrary);

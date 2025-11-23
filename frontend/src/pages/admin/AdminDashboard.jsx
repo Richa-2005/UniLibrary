@@ -5,10 +5,11 @@ import styles from './AdminDashboard.module.css';
 //sub - sections
 import AddBookSection from './components/AddBookSection';
 import InventorySection from './components/InventorySection';
+import StudentSection from './components/StudentSection';
 
 const AdminDashboard = () => {
   const { user } = useAuth(); //get user details
-  const [activeTab, setActiveTab] = useState('inventory'); // 'inventory' or 'add'
+  const [activeTab, setActiveTab] = useState('inventory'); // 'inventory' or 'add' or 'students'
   const [stats, setStats] = useState({ totalBooks: 0, totalCopies: 0, activeLoans: 0 }); 
 
   const fetchStats = useCallback(async () => {
@@ -79,10 +80,18 @@ const AdminDashboard = () => {
         >
           Add New Book
         </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'students' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('students')}
+        >
+          Manage Students
+        </button>
       </div>
 
       <div className={styles.contentArea}>
-        {activeTab === 'inventory' ? <InventorySection onInventoryUpdate={fetchStats} /> : <AddBookSection />}
+        {activeTab === 'inventory' && <InventorySection onInventoryUpdate={fetchStats} />}
+        {activeTab === 'add' && <AddBookSection />}
+        {activeTab === 'students' && <StudentSection />}
       </div>
     </div>
   );

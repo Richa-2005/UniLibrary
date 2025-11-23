@@ -117,3 +117,90 @@ export const checkIn = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export const registerStudentByAdmin = async (req, res) => {
+  const { name, rollNumber, password } = req.body;
+  const { universityId } = req.user; 
+
+  if (!name || !rollNumber || !password) {
+    return res.status(400).json({ error: 'Please provide Name, Roll Number, and Password.' });
+  }
+
+  try {
+    // 1. Check if student exists IN THIS UNIVERSITY
+    const existingStudent = await prisma.student.findFirst({
+      where: {
+        rollNumber,
+        universityId
+      }
+    });
+
+    if (existingStudent) {
+      return res.status(400).json({ error: 'Student with this Roll Number already exists.' });
+    }
+
+    // 2. Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    // 3. Create the student linked to the Admin's University
+    const newStudent = await prisma.student.create({
+      data: {
+        name,
+        rollNumber,
+        passwordHash,
+        universityId
+      }
+    });
+
+    res.status(201).json({ message: 'Student created successfully', student: newStudent });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while creating student.' });
+  }
+};
+
+export const getMyStudents = async (req, res) => {
+  const { universityId } = req.user; // From token
+
+  try {
+    const students = await prisma.student.findMany({
+      where: { universityId: universityId },
+      orderBy: { name: 'asc' }, // Sort alphabetically
+      select: {
+        id: true,
+        name: true,
+        rollNumber: true,
+        // Don't send back the passwordHash!
+      }
+    });
+    res.status(200).json(students);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch students.' });
+  }
+};
+
+
+export const deleteStudent = async (req, res) => {
+  const { id } = req.params;
+  const { universityId } = req.user;
+
+  try {
+    // Security Check: Ensure student belongs to this admin
+    const student = await prisma.student.findFirst({
+      where: { id, universityId }
+    });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found.' });
+    }
+
+    await prisma.student.delete({ where: { id } });
+    res.status(200).json({ message: 'Student removed.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to remove student.' });
+  }
+};
