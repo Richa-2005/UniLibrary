@@ -70,36 +70,48 @@ export const loginStudent = async (req, res) => {
 
 
 export const searchLibrary = async (req, res) => {
-  const { q } = req.query;
-  const { universityId } = req.user; // Got from 'protect' middleware
+  const { q, semester } = req.query; // Get semester from query
+  const { universityId } = req.user;
 
   try {
    
+    const whereClause = {
+      universityId: universityId,
+    };
+
+   
+    if (q && q.trim() !== '') {
+      whereClause.book = {
+        OR: [
+          { title: { contains: q, mode: 'insensitive' } },
+          { author: { contains: q, mode: 'insensitive' } },
+          { isbn: { contains: q, mode: 'insensitive' } },
+        ]
+      };
+    }
+
+    // If semester filter exists, add it
+    if (semester && semester !== 'All') {
+      whereClause.semester = parseInt(semester);
+    }
+
     const results = await prisma.libraryEntry.findMany({
-      where: {
-        universityId: universityId, // 🔒 SECURITY: Scopes search to their uni
-        book: {
-          OR: [
-            { title: { contains: q, mode: 'insensitive' } },
-            { author: { contains: q, mode: 'insensitive' } },
-            { isbn: { contains: q, mode: 'insensitive' } },
-          ]
-        }
-      },
+      where: whereClause,
       include: {
-        book: true // Include the book details (title, image, etc.)
+        book: true 
       }
     });
 
-    // Format for frontend
     const formattedResults = results.map(entry => ({
       libraryEntryId: entry.id,
       title: entry.book.title,
       author: entry.book.author,
+      isbn: entry.book.isbn,
       thumbnail: entry.book.metadata?.imageLinks?.thumbnail,
       status: entry.availableCopies > 0 ? 'Available' : 'Out of Stock',
       semester: entry.semester,
-      year: entry.year
+      year: entry.year,
+      metadata: entry.book.metadata
     }));
 
     res.json(formattedResults);
