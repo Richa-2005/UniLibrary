@@ -29,7 +29,7 @@ const LoginPage = () => {
   useEffect(() => {
     const fetchUnis = async () => {
       try {
-        // Calling our new public endpoint
+ 
         const response = await api.get('/student/universities');
         setUniversities(response.data);
         // Default to first option if available
@@ -43,7 +43,7 @@ const LoginPage = () => {
     fetchUnis();
   }, []);
 
-  // --- SUBMIT HANDLER ---
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -52,7 +52,7 @@ const LoginPage = () => {
 
     try {
       if (userType === 'admin') {
-        // === ADMIN FLOW ===
+        // ADMIN FLOW 
         if (mode === 'login') {
           await auth.login(email, password);
           navigate('/admin/dashboard');
@@ -65,7 +65,7 @@ const LoginPage = () => {
           setUniversities(res.data);
         }
       } else {
-        // === STUDENT FLOW ===
+        // STUDENT FLOW 
         // Login using the specific Student API
         const response = await api.post('/student/login', {
           rollNumber,
@@ -171,7 +171,7 @@ const LoginPage = () => {
                 <label>Roll Number</label>
                 <input 
                   type="text" 
-                  placeholder="e.g. 2K23/CS/101"
+                  placeholder="e.g. 37"
                   value={rollNumber} 
                   onChange={e => setRollNumber(e.target.value)} 
                   required 
