@@ -257,3 +257,100 @@ export const removeLibraryBook = async (req, res) => {
     res.status(500).json({ error: 'Server error while removing book.' });
   }
 };
+
+export const issueBookToStudent = async (req, res) => {
+  const { libraryEntryId, rollNumber, dueDate } = req.body;
+  const { universityId } = req.user;
+
+  try {
+    // 1. Find the Student
+    const student = await prisma.student.findFirst({
+      where: { rollNumber, universityId }
+    });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student with this Roll Number not found.' });
+    }
+
+    // 2. Check Book Availability
+    const bookEntry = await prisma.libraryEntry.findUnique({
+      where: { id: libraryEntryId }
+    });
+
+    if (bookEntry.availableCopies < 1) {
+      return res.status(400).json({ error: 'Book is out of stock.' });
+    }
+
+    // 3. TRANSACTION: Create Record & Decrease Stock
+    await prisma.$transaction([
+      // Create the record
+      prisma.borrowedRecord.create({
+        data: {
+          studentId: student.id,
+          libraryEntryId: libraryEntryId,
+          dueDate: new Date(dueDate), // Ensure it's a Date object
+        }
+      }),
+      // Decrease available copies
+      prisma.libraryEntry.update({
+        where: { id: libraryEntryId },
+        data: { availableCopies: { decrement: 1 } }
+      })
+    ]);
+
+    res.status(200).json({ message: 'Book issued successfully.' });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to issue book.' });
+  }
+};
+
+export const returnBookFromStudent = async (req, res) => {
+  const { libraryEntryId, rollNumber } = req.body;
+  const { universityId } = req.user;
+
+  try {
+    // 1. Find the Student
+    const student = await prisma.student.findFirst({
+      where: { rollNumber, universityId }
+    });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student with this Roll Number not found.' });
+    }
+
+    // 2. Find the ACTIVE Borrowed Record (returnedAt is null)
+    const activeRecord = await prisma.borrowedRecord.findFirst({
+      where: {
+        studentId: student.id,
+        libraryEntryId: libraryEntryId,
+        returnedAt: null // Only look for books currently held
+      }
+    });
+
+    if (!activeRecord) {
+      return res.status(404).json({ error: 'This student does not currently have this book.' });
+    }
+
+    // 3. TRANSACTION: Close Record & Increase Stock
+    await prisma.$transaction([
+      // Mark record as returned
+      prisma.borrowedRecord.update({
+        where: { id: activeRecord.id },
+        data: { returnedAt: new Date() }
+      }),
+      // Increase available copies
+      prisma.libraryEntry.update({
+        where: { id: libraryEntryId },
+        data: { availableCopies: { increment: 1 } }
+      })
+    ]);
+
+    res.status(200).json({ message: 'Book returned successfully.' });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to return book.' });
+  }
+};

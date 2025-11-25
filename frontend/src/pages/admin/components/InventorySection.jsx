@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import styles from './InventorySection.module.css';
 import EditBookModal from './EditBookModal';
+import IssueBookModal from './IssueBookModal';
+import ReturnBookModal from './ReturnBookModal';
 
 const InventorySection = ({ onInventoryUpdate }) => {
   const [books, setBooks] = useState([]);
@@ -9,6 +11,9 @@ const InventorySection = ({ onInventoryUpdate }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [editingBook, setEditingBook] = useState(null);
+
+  const [issueModalBook, setIssueModalBook] = useState(null);
+  const [returnModalBook, setReturnModalBook] = useState(null);
 
   // 1. Fetch Books
   useEffect(() => {
@@ -83,35 +88,45 @@ const InventorySection = ({ onInventoryUpdate }) => {
   };
 
  
-  const handleQuickStockUpdate = async (book, change) => {
-    const newAvailable = book.availableCopies + change;
-
-    // Prevent negative numbers or exceeding total copies
-    if (newAvailable < 0) return;
-    if (newAvailable > book.totalCopies) {
-      alert(`Cannot exceed Total Copies (${book.totalCopies}). Increase Total Copies in Edit first.`);
-      return;
+  const handleStockClick = (book, change) => {
+    if (change === -1) {
+      // Open Issue Modal
+      setIssueModalBook(book);
+    } else {
+      // Handle Return (+) (Keep logic simple: just increment for now)
+      setReturnModalBook(book);
     }
+  };
 
+  const handleReturnConfirm = async (entryId, rollNumber) => {
     try {
-      // Optimistic UI Update (Update screen instantly before server responds)
-      const updatedList = books.map(b => 
-        b.libraryEntryId === book.libraryEntryId 
-          ? { ...b, availableCopies: newAvailable } 
-          : b
-      );
-      setBooks(updatedList);
-      setFilteredBooks(updatedList); // Update the view
-
-      // Call Backend
-      await api.put(`/admin/my-books/${book.libraryEntryId}`, {
-        availableCopies: newAvailable
+      await api.post('/admin/return-book', {
+        libraryEntryId: entryId,
+        rollNumber
       });
+      alert("Book Returned Successfully!");
+      setReturnModalBook(null);
       if (onInventoryUpdate) onInventoryUpdate();
-    } catch (error) {
-      console.error(error);
-      alert("Failed to update stock.");
-      loadBooks(); // Revert changes if error
+      loadBooks();
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to return book.");
+    }
+  };
+
+  // Handle Modal Confirm
+  const handleIssueConfirm = async (entryId, rollNumber, dueDate) => {
+    try {
+      await api.post('/admin/issue-book', {
+        libraryEntryId: entryId,
+        rollNumber,
+        dueDate
+      });
+      alert("Book Issued Successfully!");
+      setIssueModalBook(null);
+      if (onInventoryUpdate) onInventoryUpdate();
+      loadBooks();
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to issue book.");
     }
   };
 
@@ -174,7 +189,7 @@ const InventorySection = ({ onInventoryUpdate }) => {
                         <div className={styles.buttonGroup}>
                           <button 
                             className={styles.stockBtn} 
-                            onClick={() => handleQuickStockUpdate(book, -1)}
+                            onClick={() => handleStockClick(book, -1)}
                             disabled={book.availableCopies === 0}
                             title="Issue Book (Reduce Count)"
                           >
@@ -187,7 +202,7 @@ const InventorySection = ({ onInventoryUpdate }) => {
 
                           <button 
                             className={styles.stockBtn} 
-                            onClick={() => handleQuickStockUpdate(book, 1)}
+                            onClick={() => handleStockClick(book, 1)}
                             disabled={book.availableCopies >= book.totalCopies}
                             title="Return Book (Increase Count)"
                           >
@@ -219,6 +234,21 @@ const InventorySection = ({ onInventoryUpdate }) => {
           book={editingBook} 
           onClose={() => setEditingBook(null)} 
           onSave={handleSaveUpdate}
+        />
+      )}
+      
+      {issueModalBook && (
+        <IssueBookModal 
+          book={issueModalBook}
+          onClose={() => setIssueModalBook(null)}
+          onConfirm={handleIssueConfirm}
+        />
+      )}
+      {returnModalBook && (
+        <ReturnBookModal 
+          book={returnModalBook}
+          onClose={() => setReturnModalBook(null)}
+          onConfirm={handleReturnConfirm}
         />
       )}
     </div>
