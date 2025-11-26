@@ -1,87 +1,120 @@
 # UniLibrary 📚
 
-UniLibrary Search is a web platform designed to bridge the gap between students and their university's library resources. It provides a simple interface for university libraries to manage their digital catalog and a powerful search tool for students to find books, check availability, and discover external e-book resources.
+UniLibrary is a modern, full-stack library management system designed to bridge the gap between university resources and student needs. It features a dual-interface for Administrators to manage inventory and Students to discover resources.
 
-## 🚀 The Problem
+## 🚀 Features
 
-Many university library systems are clunky, slow, or don't provide good alternatives when a book isn't available. This project aims to create a modern, fast, and user-friendly solution where:
-1.  **Universities** can easily build and manage their list of available books.
-2.  **Students** can quickly find the books they need for their courses and get immediate access to e-book links if the physical copy isn't in their library.
+### 👨‍💼 For University Admins
+* **Smart Inventory:** Add books instantly by searching the **Google Books API** (no manual typing required).
+* **Stock Management:** Track total vs. available copies.
+* **Issue & Return:** Manage book loans with student Roll Numbers; system automatically prevents deleting books that are currently issued.
+* **Student Management:** Register students and assign credentials.
+* **Dashboard:** Real-time statistics on total titles, copies, and active loans.
 
----
-
-## ✨ Features
-
-### For University Admins
-* **Secure Authentication:** Universities can create a secure administrative account.
-* **Book Inventory Management:** Easily add books to the university's catalog.
-* **External API Integration:** Search for books by title or author using an external API (like the Google Books API or OpenLibrary API) to fetch and populate book details (cover, description, ISBN, etc.).
-* **Catalog Control:** Select the correct book from API search results to add to the library's official, available-book list.
-* **Dynamic Updates:** Add new books or update the status of existing ones at any time.
-
-### For Students
-* **University-Specific Login:** Students log in using their roll number, which links them directly to their university's catalog.
-* **Powerful Search:** Search for books by title, author, or keyword.
-* **Filtered Browsing:** Filter the library's collection by semester or academic year to find relevant course materials.
-* **Availability Check:** Instantly see if a book is part of the university's collection.
-* **E-book Fallback:** If a book is not found in the university's catalog ("no data match"), the system will provide helpful external links (e.g., to Google Books, OpenLibrary, or other e-book repositories) where the student might find it.
+### 🎓 For Students
+* **University-Specific Login:** Secure access linked to their specific university.
+* **Live Availability:** Instantly see if a book is "Available" or "Out of Stock".
+* **Smart Search:** Search by title, author, or ISBN with instant results.
+* **Semester Filtering:** Filter the catalog to find relevant course materials.
+* **E-Book Fallback:** If a book isn't in the library, the system automatically fetches and displays **Google Books preview links** so students are never left without resources.
+* **Personal Profile:** Slide-out sidebar showing current borrowed books and due dates.
 
 ---
 
-## ⚙️ How It Works (User Flow)
+## 🛠️ Tech Stack
 
-1.  **Admin:** A university admin signs up and logs in.
-2.  **Admin:** Goes to their "Manage" dashboard and clicks "Add Book."
-3.  **Admin:** Searches for "Introduction to Algorithms by CLRS." The app fetches data from an external API.
-4.  **Admin:** Selects the correct edition from the results and clicks "Add to Library." The book is now listed as available for their university.
-5.  **Student:** A student from that same university logs in with their roll number.
-6.  **Student:** They search for "Algorithms" and see the book listed as available.
-7.  **Student:** They then search for "The Martian." The app finds no match in the *university's* database.
-8.  **Result:** The app displays: "Not found in your library. Here are some places you might find it:" followed by links to the book's e-book page.
+**Frontend:**
+* React (Vite)
+* CSS Modules (Glassmorphism UI)
+* Axios (API Consumption)
+* React Router DOM
 
----
-
-## 💻 Tech Stack
-
-This project is envisioned as a full-stack MERN application.
-
-* **Frontend:** **React.js** (or Next.js) for a dynamic, component-based UI.
-* **Backend:** **Node.js** & **Express.js** for building the RESTful API.
-* **Database:** **PostgresSQL**  to store university data, student accounts, and the lists of books each university owns.
-* **Authentication:** **JWT (JSON Web Tokens)** for securing admin and student routes.
-* **External API:** **Google Books API** or **OpenLibrary API** for fetching comprehensive book data.
+**Backend:**
+* Node.js & Express
+* **PostgreSQL** (Relational Database)
+* **Prisma ORM** (Schema & Queries)
+* JSON Web Tokens (JWT) for Authentication
+* Bcrypt (Password Hashing)
 
 ---
 
-## 🔧 Getting Started (Local Development)
+## 🔧 Installation & Setup
 
-To get a local copy up and running:
+### 1. Prerequisites
+* Node.js installed
+* PostgreSQL installed and running
 
-### Prerequisites
-* Node.js (v18 or later)
-* npm
-* MongoDB (local instance or a cloud URI from MongoDB Atlas)
-* An API Key from [Google Books API](https://developers.google.com/books) (or use the open [OpenLibrary API](https://openlibrary.org/developers/api))
+### 2. Clone the Repository
+```bash
+git clone [https://github.com/Richa-2005/UniLibrary.git]
+cd unilibrary
+```
+### 3.Backend Setup
+```bash
+cd backend
+npm install
 
-### Installation
+# Create a .env file in /backend with:
+# DATABASE_URL="postgresql://user:password@localhost:5432/uniLibrary"
+# JWT_SECRET="your_secret_key"
+# GOOGLE_BOOKS_API_KEY="your_google_api_key"
 
-1.  **Clone the repository:**
-    ```sh
-    git clone [https://github.com/Richa-2005/Uni_Library.git](https://github.com/Richa-2005/Uni_Library.git)
-    cd Uni_Library
-    ```
+# Run Database Migrations
+npx prisma migrate dev --name init
 
-2.  **Install Backend Dependencies:**
-    ```sh
-    cd server
-    npm install
-    ```
+# Start Server
+npm run dev
+```
+### 4.Frontend Setup
+```bash
+cd frontend
+npm install
 
-3.  **Install Frontend Dependencies:**
-    ```sh
-    cd ../client
-    npm install
-    ```
+# Start React App
+npm run dev
+```
+## 📸 Project Tour
 
----
-Built with ☕️ by <strong>richa‑2005</strong> • Crafted for smarter campus libraries.
+### 1. Dual-Role Authentication Portal
+A secure, unified login interface featuring a glassmorphism UI. Supports distinct workflows for University Admins (with registration) and Students (with roll-number login).
+![Login Page](./screenshots/login-page.png)
+
+### 2. Admin Command Center
+The central hub for librarians. Features real-time statistics on inventory and active loans, along with a comprehensive table for managing book stock and details.
+![Admin Dashboard](./screenshots/admin-inventory.png)
+
+### 3. API-Driven Book Acquisition
+Admins can instantly populate the library catalog by searching the **Google Books API**. This fetches high-quality metadata (covers, descriptions, authors) automatically.
+![Add Book Interface](./screenshots/admin-add-book.png)
+
+### 4. Student Registry Management
+A dedicated section for Admins to register new students and view the complete directory of users linked to their university, ensuring secure access control.
+![Manage Students](./screenshots/add-student.png)
+
+### 5. Granular Inventory Control
+Admins can edit specific details for any book in their collection, including updating total stock counts, semesters, and academic years to keep data accurate.
+![Edit Book Details](./screenshots/edit-book.png)
+
+### 6. Streamlined Book Issuing
+The "Issue" workflow allows Admins to quickly assign a book to a student using their Roll Number and a custom Due Date, automatically reducing available stock.
+![Issue Book Modal](./screenshots/issue-book.png)
+
+### 7. Efficient Return Processing
+The "Return" workflow closes the loop by verifying the student's active loan and instantly restoring the book's availability status in the database.
+![Return Book Modal](./screenshots/return-book.png)
+
+### 8. Student Discovery & Availability
+Students can browse the university's specific catalog, filter by semester, and check the **real-time availability** of physical copies before heading to the library.
+![Student Search](./screenshots/student-search.png)
+
+### 9. Smart E-Book Fallback
+If a book is not available in the university's physical collection, the system intelligently suggests **External E-Book Resources** via Google Books, ensuring students always find what they need.
+![E-Book Fallback](./screenshots/student-fallback.png)
+
+### 10. User Profile & Loan Tracking
+A slide-out sidebar provides quick access to user details and a dynamic list of **currently borrowed books** with their respective due dates.
+![Profile Sidebar](./screenshots/profile-sidebar.png)
+
+## 🛡️ License
+
+This project is open-source and available under the [MIT License](LICENSE).
