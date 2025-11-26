@@ -95,7 +95,7 @@ const LoginPage = () => {
         <div className={`${styles.infoSection} ${styles.glassCard}`}>
           <h1 className={styles.mainTitle}>UniLibrary</h1>
           <p className={styles.tagline}>
-            **Bridging the Stacks to the Screen.**
+            --Bridging the Stacks to the Screen.--
           </p>
           <p className={styles.description}>
             Welcome to the central hub where your university's entire collection comes to life. 
