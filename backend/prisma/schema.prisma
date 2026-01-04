@@ -15,11 +15,8 @@ model University {
   name              String
   adminEmail        String         @unique // For admin login
   adminPasswordHash String         // Stored hashed password
-  
-  // --- Relationships ---
-  // A University has many Students
+  finePerDay  Float    @default(10.0)
   students        Student[]
-  // A University has many books in its library (via LibraryEntry)
   libraryEntries  LibraryEntry[]
 }
 
@@ -80,6 +77,8 @@ model LibraryEntry {
   totalCopies     Int @default(1)
   availableCopies Int @default(1)
   
+  price          Float    @default(0.0)
+  
   // --- Relationships ---
   // This entry can be borrowed many times
   borrowedRecords BorrowedRecord[]
@@ -88,20 +87,19 @@ model LibraryEntry {
   @@unique([universityId, bookId])
 }
 
-// This table tracks *who* borrowed *which* book
 model BorrowedRecord {
-  id           String    @id @default(cuid())
-  
-  // --- Relationships ---
-  // Belongs to ONE student
-  student      Student   @relation(fields: [studentId], references: [id])
-  studentId    String
-  // Refers to ONE library book entry
-  libraryEntry LibraryEntry @relation(fields: [libraryEntryId], references: [id])
+  id             String       @id @default(uuid())
+  student        Student      @relation(fields: [studentId], references: [id])
+  studentId      String
+  libraryEntry   LibraryEntry @relation(fields: [libraryEntryId], references: [id], onDelete: Cascade)
   libraryEntryId String
-  
-  // --- Data for this specific loan ---
-  borrowedAt   DateTime  @default(now())
-  dueDate      DateTime
-  returnedAt   DateTime? // Null if not yet returned
+  borrowedAt     DateTime     @default(now())
+  dueDate        DateTime
+  returnedAt     DateTime?
+
+  // --- NEW FINANCIAL FIELDS ---
+  status         String       @default("returned") // 'returned', 'damaged', 'lost'
+  fineAmount     Float        @default(0.0)        // Overdue fine collected
+  damageAmount   Float        @default(0.0)        // Damage charge collected
+  lostAmount     Float        @default(0.0)        // Book price collected (if lost)
 }

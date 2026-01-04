@@ -6,11 +6,14 @@ import styles from './AdminDashboard.module.css';
 import AddBookSection from './components/AddBookSection';
 import InventorySection from './components/InventorySection';
 import StudentSection from './components/StudentSection';
+import SettingsModal from './components/SettingsModal';
+import FinancialsSection from './components/FinancialsSection';
 
 const AdminDashboard = () => {
   const { user } = useAuth(); //get user details
   const [activeTab, setActiveTab] = useState('inventory'); // 'inventory' or 'add' or 'students'
   const [stats, setStats] = useState({ totalBooks: 0, totalCopies: 0, activeLoans: 0 }); 
+  const [showSettings, setShowSettings] = useState(false);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -86,13 +89,26 @@ const AdminDashboard = () => {
         >
           Manage Students
         </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'financials' ? styles.activeTab : styles.tab}`} 
+          onClick={() => setActiveTab('financials')}
+        >
+          Financials
+        </button>
+        <button 
+          className={`${styles.tab}`}
+          onClick={() => setShowSettings(true)}>
+          Library Settings
+        </button>
       </div>
 
       <div className={styles.contentArea}>
         {activeTab === 'inventory' && <InventorySection onInventoryUpdate={fetchStats} />}
         {activeTab === 'add' && <AddBookSection />}
         {activeTab === 'students' && <StudentSection />}
+        {activeTab === 'financials' && <FinancialsSection />}
       </div>
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   );
 };

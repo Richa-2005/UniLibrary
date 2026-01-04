@@ -4,6 +4,7 @@ import styles from './InventorySection.module.css';
 import EditBookModal from './EditBookModal';
 import IssueBookModal from './IssueBookModal';
 import ReturnBookModal from './ReturnBookModal';
+import ActiveBorrowersModal from './ActiveBorrowersModal';
 
 const InventorySection = ({ onInventoryUpdate }) => {
   const [books, setBooks] = useState([]);
@@ -88,15 +89,18 @@ const InventorySection = ({ onInventoryUpdate }) => {
   };
 
  
-  const handleStockClick = (book, change) => {
-    if (change === -1) {
-      // Open Issue Modal
-      setIssueModalBook(book);
-    } else {
-      // Handle Return (+) (Keep logic simple: just increment for now)
-      setReturnModalBook(book);
-    }
-  };
+  const [activeBorrowersModalBook, setActiveBorrowersModalBook] = useState(null); // Rename returnModalBook to this
+
+
+const handleStockClick = (book, change) => {
+  if (change === -1) {
+ 
+    setIssueModalBook(book);
+  } else {
+   
+    setActiveBorrowersModalBook(book); 
+  }
+};
 
   const handleReturnConfirm = async (entryId, rollNumber) => {
     try {
@@ -244,11 +248,15 @@ const InventorySection = ({ onInventoryUpdate }) => {
           onConfirm={handleIssueConfirm}
         />
       )}
-      {returnModalBook && (
-        <ReturnBookModal 
-          book={returnModalBook}
-          onClose={() => setReturnModalBook(null)}
-          onConfirm={handleReturnConfirm}
+      {activeBorrowersModalBook && (
+        <ActiveBorrowersModal 
+          book={activeBorrowersModalBook}
+          onClose={() => setActiveBorrowersModalBook(null)}
+          onReturnSuccess={(shouldClose = true) => {
+            loadBooks();
+            if (onInventoryUpdate) onInventoryUpdate();
+            if (shouldClose) setActiveBorrowersModalBook(null);
+          }}
         />
       )}
     </div>

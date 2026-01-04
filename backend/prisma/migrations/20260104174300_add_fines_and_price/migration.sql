@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "LibraryEntry" ADD COLUMN     "price" DOUBLE PRECISION NOT NULL DEFAULT 0.0;
+
+-- AlterTable
+ALTER TABLE "University" ADD COLUMN     "finePerDay" DOUBLE PRECISION NOT NULL DEFAULT 10.0;

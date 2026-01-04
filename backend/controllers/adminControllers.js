@@ -204,3 +204,70 @@ export const deleteStudent = async (req, res) => {
     res.status(500).json({ error: 'Failed to remove student.' });
   }
 };
+
+export const getUniversitySettings = async (req, res) => {
+  const { universityId } = req.user;
+  try {
+    const uni = await prisma.university.findUnique({ 
+      where: { id: universityId },
+      select: { finePerDay: true }
+    });
+    res.json(uni);
+  } catch (err) { res.status(500).json({ error: "Failed" }); }
+};
+
+export const updateUniversitySettings = async (req, res) => {
+  const { universityId } = req.user;
+  const { finePerDay } = req.body;
+  try {
+    await prisma.university.update({
+      where: { id: universityId },
+      data: { finePerDay: parseFloat(finePerDay) }
+    });
+    res.json({ message: "Settings updated" });
+  } catch (err) { res.status(500).json({ error: "Failed" }); }
+};
+
+export const getTransactionHistory = async (req, res) => {
+  const { universityId } = req.user;
+
+  try {
+    const history = await prisma.borrowedRecord.findMany({
+      where: {
+        libraryEntry: { universityId: universityId }, // Filter by Admin's University
+        returnedAt: { not: null }, // Only completed transactions
+        OR: [
+          { fineAmount: { gt: 0 } },
+          { damageAmount: { gt: 0 } },
+          { lostAmount: { gt: 0 } }
+        ]
+      },
+      include: {
+        student: { select: { name: true, rollNumber: true } },
+        libraryEntry: { include: { book: { select: { title: true } } } }
+      },
+      orderBy: { returnedAt: 'desc' } // Newest first
+    });
+
+    // Format for frontend
+    const formatted = history.map(rec => ({
+      id: rec.id,
+      date: rec.returnedAt,
+      studentName: rec.student.name,
+      rollNumber: rec.student.rollNumber,
+      bookTitle: rec.libraryEntry.book.title,
+      type: rec.status, // returned/damaged/lost
+      totalCollected: rec.fineAmount + rec.damageAmount + rec.lostAmount,
+      breakdown: {
+        fine: rec.fineAmount,
+        damage: rec.damageAmount,
+        lost: rec.lostAmount
+      }
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch transactions' });
+  }
+};

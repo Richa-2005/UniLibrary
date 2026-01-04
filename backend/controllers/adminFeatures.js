@@ -110,6 +110,14 @@ export const addBookToLibrary = async (req, res) => {
       return res.status(409).json({ error: 'This book is already in your library.' });
     }
 
+    let fetchedPrice = 0;
+    if (volumeData.saleInfo && volumeData.saleInfo.listPrice) {
+      fetchedPrice = volumeData.saleInfo.listPrice.amount;
+    } 
+    else if (volumeData.saleInfo && volumeData.saleInfo.retailPrice) {
+       fetchedPrice = volumeData.saleInfo.retailPrice.amount;
+    }
+
     // 5. Add the book to the university's `LibraryEntry` table
     const newLibraryEntry = await prisma.libraryEntry.create({
       data: {
@@ -119,6 +127,7 @@ export const addBookToLibrary = async (req, res) => {
         year: year ? parseInt(year) : null,
         totalCopies: 1,
         availableCopies: 1,
+        price: fetchedPrice, 
       },
     });
 
@@ -173,40 +182,35 @@ export const getMyLibraryBooks = async (req, res) => {
 
 // @desc    Update a book's details in the admin's library
 // @route   PUT /api/admin/my-books/:id
-// @access  Private (Admin only)
 export const updateLibraryBook = async (req, res) => {
   try {
     const { id: libraryEntryId } = req.params;
     
-    //data of the book clicked which was given by admin, the updated data
-    const { semester, year, totalCopies, availableCopies } = req.body;
+    // 1. Extract 'price' from the request body
+    const { semester, year, totalCopies, availableCopies, price } = req.body; 
 
     const { universityId } = req.user;
 
-    // Ensure the LibraryEntry belongs to the admin's university
     const entry = await prisma.libraryEntry.findFirst({
-      where: {
-        id: libraryEntryId,
-        universityId: universityId, 
-      },
+      where: { id: libraryEntryId, universityId: universityId },
     });
 
     if (!entry) {
-      return res.status(404).json({ error: 'Book entry not found in your library.' });
+      return res.status(404).json({ error: 'Book entry not found.' });
     }
 
-    // 5. Prepare the data for update
+    // 2. Prepare data for update
     const dataToUpdate = {};
     if (semester !== undefined) dataToUpdate.semester = parseInt(semester);
     if (year !== undefined) dataToUpdate.year = parseInt(year);
     if (totalCopies !== undefined) dataToUpdate.totalCopies = parseInt(totalCopies);
     if (availableCopies !== undefined) dataToUpdate.availableCopies = parseInt(availableCopies);
+    
+    // 3. Add Price Update Logic
+    if (price !== undefined) dataToUpdate.price = parseFloat(price); 
 
-    // 6. Update the entry
     const updatedEntry = await prisma.libraryEntry.update({
-      where: {
-        id: libraryEntryId,
-      },
+      where: { id: libraryEntryId },
       data: dataToUpdate,
     });
 
@@ -306,51 +310,81 @@ export const issueBookToStudent = async (req, res) => {
   }
 };
 
+// @desc    Return a book (or mark as lost)
+// @route   POST /api/admin/return-book
 export const returnBookFromStudent = async (req, res) => {
-  const { libraryEntryId, rollNumber } = req.body;
+  // EXTRACT NEW FIELDS
+  const { libraryEntryId, rollNumber, status, fineAmount, damageAmount, lostAmount } = req.body; 
   const { universityId } = req.user;
 
   try {
-    // 1. Find the Student
     const student = await prisma.student.findFirst({
       where: { rollNumber, universityId }
     });
 
-    if (!student) {
-      return res.status(404).json({ error: 'Student with this Roll Number not found.' });
-    }
+    if (!student) return res.status(404).json({ error: 'Student not found.' });
 
-    // 2. Find the ACTIVE Borrowed Record (returnedAt is null)
     const activeRecord = await prisma.borrowedRecord.findFirst({
       where: {
         studentId: student.id,
         libraryEntryId: libraryEntryId,
-        returnedAt: null // Only look for books currently held
+        returnedAt: null 
       }
     });
 
-    if (!activeRecord) {
-      return res.status(404).json({ error: 'This student does not currently have this book.' });
-    }
+    if (!activeRecord) return res.status(404).json({ error: 'No active record found.' });
 
-    // 3. TRANSACTION: Close Record & Increase Stock
-    await prisma.$transaction([
-      // Mark record as returned
-      prisma.borrowedRecord.update({
+    // DATABASE TRANSACTION
+    await prisma.$transaction(async (tx) => {
+      // 1. Close the record & SAVE FINANCIALS
+      await tx.borrowedRecord.update({
         where: { id: activeRecord.id },
-        data: { returnedAt: new Date() }
-      }),
-      // Increase available copies
-      prisma.libraryEntry.update({
-        where: { id: libraryEntryId },
-        data: { availableCopies: { increment: 1 } }
-      })
-    ]);
+        data: { 
+          returnedAt: new Date(),
+          status: status || 'returned',
+          fineAmount: parseFloat(fineAmount || 0),
+          damageAmount: parseFloat(damageAmount || 0),
+          lostAmount: parseFloat(lostAmount || 0)
+        } 
+      });
 
-    res.status(200).json({ message: 'Book returned successfully.' });
+      // 2. STOCK LOGIC
+      if (status !== 'lost') {
+        await tx.libraryEntry.update({
+          where: { id: libraryEntryId },
+          data: { availableCopies: { increment: 1 } }
+        });
+      }
+    });
+
+    res.status(200).json({ message: 'Processed successfully.' });
 
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to return book.' });
+  }
+};
+
+// GET ACTIVE BORROWERS FOR A BOOK
+
+export const getBookBorrowers = async (req, res) => {
+  const { libraryEntryId } = req.params;
+
+  try {
+    const activeLoans = await prisma.borrowedRecord.findMany({
+      where: {
+        libraryEntryId: libraryEntryId,
+        returnedAt: null 
+      },
+      include: {
+        student: true 
+      },
+      orderBy: { dueDate: 'asc' } 
+    });
+
+    res.json(activeLoans);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch borrowers" });
   }
 };
