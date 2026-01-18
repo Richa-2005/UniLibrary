@@ -1,12 +1,9 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from '../services/api'; //gives the base url and token
 
-// this is exported to get the authentication of user's identity 
+// get the authentication of user's identity 
 const AuthContext = createContext(null);
 
-
-// This is a component that *provides* the context's value
-// to all children wrapped inside it.
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
@@ -14,10 +11,9 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      // If we have a token, let's verify it with the server
       api.get('/admin/me')
         .then(response => {
-          // Token is valid, Set the user //data sent by checkIn
+          // Token is valid, Set the user 
           setUser({ name: response.data.name, email: response.data.adminEmail });
         })
         .catch(() => {
@@ -37,7 +33,6 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (email, password) => {
 
-    // This will hit http://localhost:5000/api/login-admin //send new token
     const response = await api.post('/admin/login', { adminEmail: email, password });
     
     // Save token and user
@@ -55,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  // The value our context will provide to the app
+  
   const value = {
     user,
     token,

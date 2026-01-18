@@ -1,15 +1,26 @@
-/* src/components/layout/DashboardLayout.module.css */
 .layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--bg-color); /* Cream/Ivory Background */
+  background: transparent; 
 }
 
 .content {
   width: 100%;
-  max-width: 1200px;
-  margin: 2rem auto; /* Top/bottom and auto left/right */
-  padding: 0 2rem;
+  max-width: 1240px; 
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
   flex-grow: 1;
+  animation: fadeInPage 0.5s ease-out;
+}
+
+@keyframes fadeInPage {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 1.5rem 1rem;
+  }
 }

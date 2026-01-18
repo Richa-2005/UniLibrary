@@ -70,16 +70,14 @@ export const loginStudent = async (req, res) => {
 
 
 export const searchLibrary = async (req, res) => {
-  const { q, semester } = req.query; // Get semester from query
+  const { q, semester, category } = req.query; 
   const { universityId } = req.user;
 
   try {
-   
     const whereClause = {
       universityId: universityId,
     };
 
-   
     if (q && q.trim() !== '') {
       whereClause.book = {
         OR: [
@@ -90,16 +88,20 @@ export const searchLibrary = async (req, res) => {
       };
     }
 
-    // If semester filter exists, add it
+    // filter logic
+    // 1. If Category is provided (e.g. "Novel" or "Academic"), filter by it
+    if (category && category !== 'All') {
+        whereClause.category = category;
+    }
+
+    // 2. If Semester is provided , add semester filter
     if (semester && semester !== 'All') {
       whereClause.semester = parseInt(semester);
     }
 
     const results = await prisma.libraryEntry.findMany({
       where: whereClause,
-      include: {
-        book: true 
-      }
+      include: { book: true }
     });
 
     const formattedResults = results.map(entry => ({
@@ -109,6 +111,8 @@ export const searchLibrary = async (req, res) => {
       isbn: entry.book.isbn,
       thumbnail: entry.book.metadata?.imageLinks?.thumbnail,
       status: entry.availableCopies > 0 ? 'Available' : 'Out of Stock',
+      
+      category: entry.category, 
       semester: entry.semester,
       year: entry.year,
       metadata: entry.book.metadata
@@ -129,11 +133,11 @@ export const getMyBorrowedBooks = async (req, res) => {
     const records = await prisma.borrowedRecord.findMany({
       where: { 
         studentId: studentId,
-        returnedAt: null // Only show active loans
+        returnedAt: null // Only  active loans
       },
       include: {
         libraryEntry: {
-          include: { book: true } // Get the Book Title/Image
+          include: { book: true } // the Book Title/Image
         }
       },
       orderBy: { dueDate: 'asc' }
@@ -169,14 +173,12 @@ export const searchExternalBooks = async (req, res) => {
 
     if (!data.items) return res.json([]);
 
-    // Map to a clean format
     const externalBooks = data.items.map(book => ({
       googleId: book.id,
       title: book.volumeInfo.title,
       authors: book.volumeInfo.authors ? book.volumeInfo.authors.join(', ') : 'Unknown',
       thumbnail: book.volumeInfo.imageLinks?.thumbnail || null,
       description: book.volumeInfo.description,
-      // This is the link to the E-Book/Preview
       link: book.volumeInfo.previewLink || book.volumeInfo.infoLink
     }));
 

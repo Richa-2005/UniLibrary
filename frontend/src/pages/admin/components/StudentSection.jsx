@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import styles from './StudentSection.module.css';
+import toast from 'react-hot-toast';
 
 const StudentSection = () => {
   // Form State
@@ -11,7 +12,7 @@ const StudentSection = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. Fetch Students on Load
+  // Fetch Students
   useEffect(() => {
     fetchStudents();
   }, []);
@@ -27,38 +28,67 @@ const StudentSection = () => {
     }
   };
 
-  // 2. Handle Add Student
+  // Handle Add Student
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
       await api.post('/admin/add-student', formData);
-      alert(`Success! Student "${formData.name}" added.`);
-      setFormData({ name: '', rollNumber: '', password: '' }); // Reset form
-      fetchStudents(); // Refresh the list immediately
+      toast.success(`Success! Student "${formData.name}" added.`);
+      setFormData({ name: '', rollNumber: '', password: '' }); 
+      fetchStudents(); 
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to add student.');
+      toast.error(error.response?.data?.error || 'Failed to add student.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  // 3. Handle Delete Student
-  const handleDelete = async (id, name) => {
-    if(!window.confirm(`Remove student "${name}"? This cannot be undone.`)) return;
+  // Handle Delete Student 
+  const handleDeleteRequest = (id, name) => {
+    toast((t) => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <p style={{ margin: 0, fontWeight: 500 }}>
+          Remove student <b>"{name}"</b>?
+          <br />
+          <span style={{ fontSize: '0.85em', color: '#666' }}>This cannot be undone.</span>
+        </p>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
+          <button 
+            onClick={() => toast.dismiss(t.id)}
+            style={{ padding: '6px 12px', border: '1px solid #ccc', borderRadius: '4px', background: 'white', cursor: 'pointer' }}
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={() => {
+              performDelete(id); 
+              toast.dismiss(t.id);
+            }}
+            style={{ padding: '6px 12px', border: 'none', borderRadius: '4px', background: '#ef4444', color: 'white', cursor: 'pointer' }}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    ), { duration: 5000, position: 'top-center', style: { border: '1px solid #ef4444', padding: '16px' } });
+  };
 
+  // Delete Logic
+  const performDelete = async (id) => {
     try {
       await api.delete(`/admin/student/${id}`);
-      setStudents(students.filter(s => s.id !== id)); // Update UI
+      setStudents(students.filter(s => s.id !== id)); 
+      toast.success('Student removed successfully.');
     } catch (error) {
-      alert('Failed to delete student.');
+      toast.error('Failed to delete student.');
     }
   };
 
   return (
     <div className={styles.container}>
       
-      {/* --- LEFT: Registration Form --- */}
+      {/* Registration Form */}
       <div className={`card ${styles.formCard}`}>
         <h2>Register New Student</h2>
         <p className={styles.instruction}>
@@ -105,7 +135,7 @@ const StudentSection = () => {
         </form>
       </div>
 
-      {/* --- RIGHT: Student Directory --- */}
+      {/* Student List */}
       <div className={`card ${styles.listCard}`}>
         <div className={styles.listHeader}>
           <h2>Student Directory</h2>
@@ -134,7 +164,7 @@ const StudentSection = () => {
                     <td style={{textAlign: 'right'}}>
                       <button 
                         className={styles.deleteBtn}
-                        onClick={() => handleDelete(student.id, student.name)}
+                        onClick={() => handleDeleteRequest(student.id, student.name)} 
                         title="Remove Student"
                       >
                         &times;

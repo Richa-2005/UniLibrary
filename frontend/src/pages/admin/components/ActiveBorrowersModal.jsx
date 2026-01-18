@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../../../services/api.js';
-import styles from './BookDetailModal.module.css';
+
+import styles from './Transactional.module.css';
+import toast from 'react-hot-toast';
 
 const ActiveBorrowersModal = ({ book, onClose, onReturnSuccess }) => {
   const [borrowers, setBorrowers] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // Settings
   const [finePerDay, setFinePerDay] = useState(0);
   
-  // Interaction State
-  const [selectedStudent, setSelectedStudent] = useState(null); // Which student is being processed
-  const [returnType, setReturnType] = useState('returned'); // 'returned', 'damaged', 'lost'
-  const [damageCharge, setDamageCharge] = useState(0); // Manual input for damage
+  const [selectedStudent, setSelectedStudent] = useState(null); 
+  const [returnType, setReturnType] = useState('returned'); 
+  const [damageCharge, setDamageCharge] = useState(0); 
 
   useEffect(() => {
     fetchData();
@@ -27,13 +26,12 @@ const ActiveBorrowersModal = ({ book, onClose, onReturnSuccess }) => {
       setBorrowers(borrowRes.data);
       setFinePerDay(settingsRes.data.finePerDay);
     } catch (err) {
-      alert("Failed to load data");
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
   };
 
-  // --- CALCULATION LOGIC ---
   const calculateOverdueDays = (dueDate) => {
     const today = new Date();
     const due = new Date(dueDate);
@@ -46,29 +44,14 @@ const ActiveBorrowersModal = ({ book, onClose, onReturnSuccess }) => {
 
   const calculateTotal = () => {
     if (!selectedStudent) return 0;
-    
-    // 1. Overdue Fine
     const days = calculateOverdueDays(selectedStudent.dueDate);
     const overdueFine = days * finePerDay;
-
-    // 2. Extra Charges
-    if (returnType === 'lost') {
-       // For lost, usually we charge Book Price. (Overdue might be waived or added depending on policy)
-       // Let's assume Total = Price + Overdue
-       return overdueFine + (book.price || 0);
-    } 
-    else if (returnType === 'damaged') {
-       return overdueFine + parseFloat(damageCharge || 0);
-    }
-    
-    // Normal Return
+    if (returnType === 'lost') return overdueFine + (book.price || 0);
+    if (returnType === 'damaged') return overdueFine + parseFloat(damageCharge || 0);
     return overdueFine;
   };
 
- 
-  const handleConfirm = async () => {
-    if (!window.confirm("Confirm this transaction?")) return;
-    
+  const performTransaction = async () => {
     const daysOverdue = calculateOverdueDays(selectedStudent.dueDate);
     const calculatedFine = daysOverdue * finePerDay;
     const calculatedDamage = returnType === 'damaged' ? parseFloat(damageCharge || 0) : 0;
@@ -78,72 +61,57 @@ const ActiveBorrowersModal = ({ book, onClose, onReturnSuccess }) => {
       await api.post('/admin/return-book', {
         libraryEntryId: book.libraryEntryId,
         rollNumber: selectedStudent.student.rollNumber,
-        status: returnType, // 'returned', 'lost', 'damaged'
+        status: returnType,
         fineAmount: calculatedFine,
         damageAmount: calculatedDamage,
         lostAmount: calculatedLost
       });
-      
+      toast.success("Book returned successfully!");
       setBorrowers(prev => prev.filter(b => b.student.id !== selectedStudent.student.id));
       setSelectedStudent(null);
       setReturnType('returned');
       setDamageCharge(0);
-      
-      // If list empty, notify parent
       if (borrowers.length <= 1) onReturnSuccess();
       else onReturnSuccess(false); 
-      
     } catch (err) {
-      alert("Transaction failed.");
+      toast.error(err.response?.data?.error || "Transaction failed.");
     }
   };
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()} style={{maxWidth: '800px'}}>
+     
+      <div className={`${styles.modalContainer} ${styles.modalLarge}`} onClick={e => e.stopPropagation()}>
         <button className={styles.closeButton} onClick={onClose}>&times;</button>
         
-        <div style={{ padding: '2rem' }}>
+        {/* Heading */}
+        <div className={styles.header}>
           <h2 className={styles.title}>Manage Returns</h2>
-          <p className={styles.author}>Book: {book.title} (Price: ₹{book.price || 'N/A'})</p>
-          <hr className={styles.divider} />
+          <p className={styles.subtitle}>
+            Book: <span style={{color: '#0f172a', fontWeight:'bold'}}>{book.title}</span> 
+            <span style={{marginLeft: '10px', background:'#f1f5f9', padding:'2px 8px', borderRadius:'4px', fontSize:'0.85rem'}}>
+               Price: ₹{book.price || 'N/A'}
+            </span>
+          </p>
+        </div>
 
-          {/* LIST OF BORROWERS */}
-          {!selectedStudent && (
-             <div>
-               {loading ? <p>Loading...</p> : borrowers.length === 0 ? <p>No active loans.</p> : (
-                 <table style={{width:'100%', borderCollapse:'collapse'}}>
+        <div className={styles.body}>
+          {!selectedStudent ? (
+             <div className={styles.tableContainer}>
+               {loading ? <p style={{padding:'1rem'}}>Loading...</p> : borrowers.length === 0 ? <p style={{padding:'1rem'}}>No active loans.</p> : (
+                 <table className={styles.table}>
                    <thead>
-                     <tr style={{textAlign:'left', color:'#666', borderBottom:'1px solid #ccc'}}>
-                       <th style={{padding:'10px'}}>Student</th>
-                       <th style={{padding:'10px'}}>Due Date</th>
-                       <th style={{padding:'10px'}}>Status</th>
-                       <th style={{padding:'10px'}}>Action</th>
-                     </tr>
+                     <tr><th>Student</th><th>Due Date</th><th>Status</th><th>Action</th></tr>
                    </thead>
                    <tbody>
                      {borrowers.map(rec => {
                        const days = calculateOverdueDays(rec.dueDate);
                        return (
-                         <tr key={rec.id} style={{borderBottom:'1px solid #eee'}}>
-                           <td style={{padding:'10px'}}>
-                             <strong>{rec.student.rollNumber}</strong><br/>
-                             {rec.student.name}
-                           </td>
-                           <td style={{padding:'10px'}}>
-                             {new Date(rec.dueDate).toLocaleDateString()}
-                           </td>
-                           <td style={{padding:'10px', color: days > 0 ? 'red' : 'green'}}>
-                             {days > 0 ? `${days} Days Late` : 'On Time'}
-                           </td>
-                           <td style={{padding:'10px'}}>
-                             <button 
-                               onClick={() => setSelectedStudent(rec)}
-                               style={{padding:'5px 10px', background:'var(--primary-color)', color:'white', border:'none', borderRadius:'4px', cursor:'pointer'}}
-                             >
-                               Select
-                             </button>
-                           </td>
+                         <tr key={rec.id}>
+                           <td><strong>{rec.student.rollNumber}</strong><br/>{rec.student.name}</td>
+                           <td>{new Date(rec.dueDate).toLocaleDateString()}</td>
+                           <td>{days > 0 ? <span style={{color:'red', fontWeight:'bold'}}>{days} Days Late</span> : <span style={{color:'green', fontWeight:'bold'}}>On Time</span>}</td>
+                           <td><button onClick={() => setSelectedStudent(rec)} className={styles.actionBtn}>Select</button></td>
                          </tr>
                        )
                      })}
@@ -151,90 +119,43 @@ const ActiveBorrowersModal = ({ book, onClose, onReturnSuccess }) => {
                  </table>
                )}
              </div>
-          )}
-
-          {/* ACTION AREA (Only shows when a student is selected) */}
-          {selectedStudent && (
-            <div style={{animation: 'fadeIn 0.3s'}}>
-              <button 
-                onClick={() => setSelectedStudent(null)}
-                style={{marginBottom:'1rem', background:'none', border:'none', color:'#666', cursor:'pointer', textDecoration:'underline'}}
-              >
-                &larr; Back to list
-              </button>
-
-              <div style={{background:'#f9f9f9', padding:'1.5rem', borderRadius:'8px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:'2rem'}}>
+          ) : (
+            <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
+              <button className={styles.backBtn} onClick={() => setSelectedStudent(null)}>← Back to list</button>
+              
+            
+              <div className={styles.splitLayout}>
                 
-                {/* LEFT: Options */}
                 <div>
-                   <h3 style={{margin:'0 0 1rem 0'}}>Return Options</h3>
-                   
-                   <div style={{display:'flex', flexDirection:'column', gap:'0.8rem'}}>
-                     <label style={{cursor:'pointer', padding:'10px', border: returnType==='returned'?'2px solid green':'1px solid #ddd', borderRadius:'6px', fontWeight: returnType==='returned'?'bold':'normal'}}>
-                       <input type="radio" name="type" checked={returnType==='returned'} onChange={()=>setReturnType('returned')} />
-                       &nbsp; Normal Return
+                   <h3 style={{marginBottom:'1rem', color:'#64748b', textTransform:'uppercase', fontSize:'0.8rem', fontWeight:'700'}}>Return Status</h3>
+                   <div className={styles.radioGroup}>
+                     <label className={`${styles.radioOption} ${returnType==='returned' ? styles.selectedOption : ''}`}>
+                       <input type="radio" checked={returnType==='returned'} onChange={()=>setReturnType('returned')} /> Normal Return
                      </label>
-
-                     <label style={{cursor:'pointer', padding:'10px', border: returnType==='damaged'?'2px solid orange':'1px solid #ddd', borderRadius:'6px', fontWeight: returnType==='damaged'?'bold':'normal'}}>
-                       <input type="radio" name="type" checked={returnType==='damaged'} onChange={()=>setReturnType('damaged')} />
-                       &nbsp; Book Damaged
+                     <label className={`${styles.radioOption} ${returnType==='damaged' ? styles.selectedOption : ''}`}>
+                       <input type="radio" checked={returnType==='damaged'} onChange={()=>setReturnType('damaged')} /> Book Damaged
                      </label>
-
-                     <label style={{cursor:'pointer', padding:'10px', border: returnType==='lost'?'2px solid red':'1px solid #ddd', borderRadius:'6px', fontWeight: returnType==='lost'?'bold':'normal'}}>
-                       <input type="radio" name="type" checked={returnType==='lost'} onChange={()=>setReturnType('lost')} />
-                       &nbsp; Book Lost
+                     <label className={`${styles.radioOption} ${returnType==='lost' ? styles.selectedOption : ''}`}>
+                       <input type="radio" checked={returnType==='lost'} onChange={()=>setReturnType('lost')} /> Book Lost
                      </label>
+                     {returnType === 'damaged' && (
+                       <div className={styles.inputGroup} style={{marginTop:'1rem'}}>
+                         <label>Damage Charge</label>
+                         <input type="number" value={damageCharge} onChange={e=>setDamageCharge(e.target.value)} />
+                       </div>
+                     )}
                    </div>
-
-                   {/* Conditional Input for Damaged */}
-                   {returnType === 'damaged' && (
-                     <div style={{marginTop:'1rem'}}>
-                       <label>Damage Charge (₹):</label>
-                       <input 
-                         type="number" 
-                         value={damageCharge} 
-                         onChange={e=>setDamageCharge(e.target.value)} 
-                         style={{marginLeft:'10px', padding:'5px', width:'80px'}}
-                       />
-                     </div>
-                   )}
                 </div>
 
-                {/* RIGHT: Bill Calculation */}
-                <div style={{background:'white', padding:'1.5rem', borderRadius:'8px', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}>
-                   <h3 style={{margin:'0 0 1rem 0', color:'#444'}}>Payment Due</h3>
-                   
-                   <div style={{display:'flex', justifyContent:'space-between', marginBottom:'0.5rem'}}>
-                     <span>Overdue Fine:</span>
-                     <span>₹{calculateOverdueDays(selectedStudent.dueDate) * finePerDay}</span>
-                   </div>
-
-                   {returnType === 'damaged' && (
-                     <div style={{display:'flex', justifyContent:'space-between', marginBottom:'0.5rem', color:'orange'}}>
-                       <span>Damage Charge:</span>
-                       <span>₹{parseFloat(damageCharge||0)}</span>
-                     </div>
-                   )}
-
-                   {returnType === 'lost' && (
-                     <div style={{display:'flex', justifyContent:'space-between', marginBottom:'0.5rem', color:'red'}}>
-                       <span>Book Price (Lost):</span>
-                       <span>₹{book.price || 0}</span>
-                     </div>
-                   )}
-
-                   <hr />
-                   <div style={{display:'flex', justifyContent:'space-between', marginTop:'0.5rem', fontSize:'1.2rem', fontWeight:'bold'}}>
-                     <span>TOTAL:</span>
-                     <span style={{color:'var(--primary-color)'}}>₹{calculateTotal()}</span>
-                   </div>
-
-                   <button 
-                     onClick={handleConfirm}
-                     style={{width:'100%', marginTop:'1.5rem', padding:'10px', background:'var(--primary-color)', color:'white', border:'none', borderRadius:'6px', fontWeight:'bold', cursor:'pointer'}}
-                   >
-                     Confirm {returnType === 'lost' ? 'Lost' : 'Return'} & Collect
-                   </button>
+       
+                <div className={styles.summaryCard}>
+                   <h3 style={{ margin: '0 0 1rem 0', color: '#0f172a', fontSize: '1.2rem', fontWeight:'700' }}>Payment Due</h3>
+                   <div className={styles.summaryRow}><span>Student:</span><span style={{color:'#0f172a', fontWeight:'bold'}}>{selectedStudent.student.rollNumber}</span></div>
+                   <div className={styles.summaryRow}><span>Overdue Fine:</span><span>₹{calculateOverdueDays(selectedStudent.dueDate) * finePerDay}</span></div>
+                   {returnType === 'damaged' && <div className={styles.summaryRow} style={{color:'#f59e0b', fontWeight:'bold'}}><span>Damage:</span><span>+ ₹{parseFloat(damageCharge||0)}</span></div>}
+                   {returnType === 'lost' && <div className={styles.summaryRow} style={{color:'#ef4444', fontWeight:'bold'}}><span>Book Price:</span><span>+ ₹{book.price}</span></div>}
+                   <div className={styles.totalRow}><span>TOTAL:</span><span>₹{calculateTotal()}</span></div>
+                   <button className={styles.primaryBtn} onClick={performTransaction}>Confirm Transaction</button>
                 </div>
               </div>
             </div>

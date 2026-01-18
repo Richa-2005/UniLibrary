@@ -1,15 +1,15 @@
-import React from 'react';
 import styles from './StudentBookDetailModal.module.css';
 
 const StudentBookDetailModal = ({ book, onClose }) => {
   if (!book) return null;
   const meta = book.metadata || {};
 
-  // Helper to strip HTML tags from description
   const cleanDescription = (desc) => {
     if (!desc) return 'No description available.';
     return desc.replace(/<[^>]+>/g, '');
   };
+
+  const isAcademic = !book.category || book.category === 'Academic';
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -18,7 +18,7 @@ const StudentBookDetailModal = ({ book, onClose }) => {
         <button className={styles.closeButton} onClick={onClose}>&times;</button>
         
         <div className={styles.content}>
-          {/* LEFT: Image */}
+          {/* Left : Image */}
           <div className={styles.imageCol}>
             <div className={styles.imageWrapper}>
               {book.thumbnail ? (
@@ -29,7 +29,7 @@ const StudentBookDetailModal = ({ book, onClose }) => {
             </div>
           </div>
 
-          {/* RIGHT: Info */}
+          {/* Right : Info */}
           <div className={styles.infoCol}>
             
             {/* Header Area */}
@@ -38,10 +38,19 @@ const StudentBookDetailModal = ({ book, onClose }) => {
               <p className={styles.author}>by {book.author}</p>
               
               <div className={styles.badgeRow}>
-                <span className={styles.semBadge}>Semester {book.semester}</span>
-                <span className={styles.yearBadge}>Year {book.year}</span>
                 
-                {/* Status Badge - Moved here */}
+                {/* status, category */}
+                {isAcademic ? (
+                  <>
+                    <span className={styles.semBadge}>Semester {book.semester}</span>
+                    <span className={styles.yearBadge}>Year {book.year}</span>
+                  </>
+                ) : (
+                  <span className={styles.semBadge} style={{ background: '#e0f2fe', color: '#0369a1' }}>
+                    {book.category}
+                  </span>
+                )}
+                
                 <span className={book.status === 'Available' ? styles.statusAvailable : styles.statusOut}>
                   {book.status}
                 </span>

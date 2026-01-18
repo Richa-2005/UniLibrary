@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../../../services/api';
 import styles from './InventorySection.module.css'; 
 
@@ -27,7 +27,7 @@ const FinancialsSection = () => {
 
   return (
     <div className={styles.container}>
-      {/* Header Card */}
+      {/* Total Fine collected */}
       <div style={{
         background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
         color: 'white',
@@ -36,12 +36,12 @@ const FinancialsSection = () => {
         marginBottom: '2rem',
         boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
       }}>
-        <h2 style={{ margin: 0, opacity: 0.9 }}>Total Collections</h2>
-        <h1 style={{ margin: '0.5rem 0 0', fontSize: '2.5rem' }}>₹{getTotalRevenue().toLocaleString()}</h1>
+        <h2 style={{ margin: 0, opacity: 0.9,color:'white' }}>Total Collections</h2>
+        <h1 style={{ margin: '0.5rem 0 0', fontSize: '2.5rem',color:'white' }}>₹{getTotalRevenue().toLocaleString()}</h1>
         <p style={{ opacity: 0.8, fontSize: '0.9rem' }}>From Fines, Damages, and Lost Books</p>
       </div>
 
-      {/* Table */}
+      {/* List of transactions */}
       <h3 style={{ color: '#444' }}>Transaction History</h3>
       {loading ? <p>Loading...</p> : transactions.length === 0 ? <p>No transactions yet.</p> : (
         <div className={styles.tableWrapper}>

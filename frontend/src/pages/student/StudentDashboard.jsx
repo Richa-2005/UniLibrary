@@ -1,134 +1,221 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
-import styles from '../admin/components/AddBookSection.module.css'; 
+import styles from './StudentDashboard.module.css';
 import StudentBookDetailModal from './StudentBookDetailModal';
 
 const StudentDashboard = () => {
   const [query, setQuery] = useState('');
-  
   const [localResults, setLocalResults] = useState([]);
   const [externalResults, setExternalResults] = useState([]); 
   
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const [loadingLocal, setLoadingLocal] = useState(true); 
+  const [loadingExternal, setLoadingExternal] = useState(false);
   
   const [selectedBook, setSelectedBook] = useState(null);
+
+ 
+  const [categoryFilter, setCategoryFilter] = useState('All'); 
   const [semesterFilter, setSemesterFilter] = useState('All');
 
-  // Combined Fetch Function
-  const fetchBooks = useCallback(async () => {
-    setLoading(true);
-    setLocalResults([]);
-    setExternalResults([]);
+  // search university library
+  const fetchLocalBooks = useCallback( async () => {
+    setLoadingLocal(true);
+    setExternalResults([]); 
     
     try {
-      // 1. Search Local Library
-      const response = await api.get(`/student/search?q=${encodeURIComponent(query)}&semester=${semesterFilter}`);
-      setLocalResults(response.data);
-
-      // 2. If NO local results , external link
-      if (response.data.length === 0 && query.trim() !== '') {
-        const extResponse = await api.get(`/student/external-search?q=${encodeURIComponent(query)}`);
-        setExternalResults(extResponse.data);
+      let url = `/student/search?q=${encodeURIComponent(query)}`;
+      
+      if (categoryFilter !== 'All') url += `&category=${categoryFilter}`;
+      
+      if (semesterFilter !== 'All' && (categoryFilter === 'All' || categoryFilter === 'Academic')) {
+        url += `&semester=${semesterFilter}`;
       }
+
+      const response = await api.get(url);
+      setLocalResults(response.data);
 
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      setLoadingLocal(false);
     }
-  }, [query, semesterFilter]);
+  }, [query, semesterFilter, categoryFilter]); 
+
+  // search external sources
+  const handleExternalSearch = async () => {
+    setLoadingExternal(true);
+    try {
+      const extResponse = await api.get(`/student/external-search?q=${encodeURIComponent(query)}`);
+      setExternalResults(extResponse.data);
+    } catch (error) {
+      console.error("External search failed", error);
+    } finally {
+      setLoadingExternal(false);
+    }
+  };
 
   useEffect(() => {
-    fetchBooks();
-  }, [semesterFilter]);
+    fetchLocalBooks();
+  }, [semesterFilter, categoryFilter]); 
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if(!query.trim()) return;
-    setSearched(true);
-    fetchBooks();
+    fetchLocalBooks();
   };
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem 1rem' }}>
+    <div className={styles.container}>
       
-      {/* Header Section */}
-      <div style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        <h1 style={{ color: 'var(--primary-color)', margin: 0 }}>Student Library</h1>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', boxShadow: 'var(--shadow)', flexWrap: 'wrap' }}>
-          <form onSubmit={handleSearchSubmit} style={{ flex: 1, display: 'flex', gap: '0.5rem', minWidth: '300px' }}>
+     
+      <div className={styles.headerWrapper}>
+        <h1 className={styles.pageTitle}>Student Library</h1>
+        
+        <div className={styles.controlsCard}>
+          <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
             <input 
               type="text" 
               placeholder="Search by Title, Author..." 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              style={{ flex: 1, padding: '0.8rem', borderRadius: '6px', border: '1px solid #ccc', outline: 'none' }}
+              className={styles.searchInput}
             />
-            <button type="submit" style={{ padding: '0 1.5rem', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Search</button>
+            <button type="submit" className={styles.searchButton}>Search</button>
           </form>
-          <div style={{ marginLeft: 'auto' }}>
+
+          <div className={styles.filterGroup}>
             <select 
-              value={semesterFilter}
-              onChange={(e) => setSemesterFilter(e.target.value)}
-              style={{ padding: '0.8rem 1rem', borderRadius: '6px', border: '1px solid var(--border-color)', outline: 'none', color: 'var(--text-color)', fontWeight: '600', cursor: 'pointer' }}
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                if(e.target.value !== 'Academic' && e.target.value !== 'All') {
+                    setSemesterFilter('All');
+                }
+              }}
+              className={styles.selectInput}
             >
-              <option value="All">All Semesters</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
-                <option key={sem} value={sem}>Semester {sem}</option>
-              ))}
+              <option value="All">All Categories</option>
+              <option value="Academic">Academic</option>
+              <option value="Novel">Novels / General</option>
+              <option value="Magazine">Magazine</option>
             </select>
+
+            {(categoryFilter === 'All' || categoryFilter === 'Academic') && (
+              <select 
+                value={semesterFilter}
+                onChange={(e) => setSemesterFilter(e.target.value)}
+                className={styles.selectInput}
+              >
+                <option value="All">All Semesters</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
+                  <option key={sem} value={sem}>Semester {sem}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA */}
+      
       <div>
-        {loading && (
-          <p style={{ textAlign: 'center', color: '#666', marginTop: '3rem' }}>Searching library resources...</p>
-        )}
-
-        {/* SCENARIO 1: Local Books Found */}
-        {!loading && localResults.length > 0 && (
-          <div className={styles.resultsGrid}>
-            {localResults.map((book) => (
-              <div 
-                key={book.libraryEntryId} 
-                className={styles.bookCard}
-                onClick={() => setSelectedBook(book)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className={styles.cardImageWrapper}>
-                  {book.thumbnail ? <img src={book.thumbnail} alt={book.title} /> : <div className={styles.noImage}>No Image</div>}
-                </div>
-                <div className={styles.cardInfo}>
-                  <h4>{book.title}</h4>
-                  <p>{book.author}</p>
-                  <div style={{ marginTop: '0.5rem' }}>
-                     <span style={{ fontSize: '0.75rem', color: '#666', background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>
-                       Sem {book.semester}
-                     </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {loadingLocal && (
+          <div className={styles.emptyState}>
+             <p>Loading library...</p>
           </div>
         )}
 
-        {/* SCENARIO 2: No Local, But External Found */}
-        {!loading && localResults.length === 0 && externalResults.length > 0 && (
-          <div style={{ animation: 'fadeIn 0.5s' }}>
-            <div style={{ textAlign: 'center', marginBottom: '2rem', color: '#666' }}>
-              <h3 style={{ color: 'var(--primary-color)' }}>Not in Library</h3>
-              <p>We couldn't find "{query}" in the university catalog, but here are online resources:</p>
+        {/* University results */}
+        {!loadingLocal && localResults.length > 0 && (
+          <>
+            <div className={styles.resultsGrid}>
+              {localResults.map((book) => (
+                <div 
+                  key={book.libraryEntryId} 
+                  className={styles.bookCard}
+                  onClick={() => setSelectedBook(book)}
+                >
+                  <div className={styles.cardImageWrapper}>
+                    {book.thumbnail ? (
+                      <img src={book.thumbnail} alt={book.title} />
+                    ) : (
+                      <div className={styles.noImage}>No Cover</div>
+                    )}
+                  </div>
+                  <div className={styles.cardInfo}>
+                    <h4>{book.title}</h4>
+                    <p>{book.author}</p>
+                    
+                    <div className={styles.badgeContainer}>
+                       {(!book.category || book.category === 'Academic') ? (<>
+                         <span className={styles.semesterBadge}>Sem {book.semester}</span>
+                         <span className={styles.semesterBadge}>Year {book.year}</span>
+                         <span className={book.status === 'Available' ? styles.statusAvailable : styles.statusOut}>
+                            {book.status}
+                          </span>
+                         </>
+                       ) : (
+                        <>
+                         <span className={styles.categoryBadge}>{book.category}</span>
+                         <span className={book.status === 'Available' ? styles.statusAvailable : styles.statusOut}>
+                            {book.status}
+                          </span>
+                          </>
+                       )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* search external links too */}
+            {query.trim() !== '' && externalResults.length === 0 && !loadingExternal && (
+              <div className={styles.expandSearchContainer}>
+                <p>Not what you are looking for?</p>
+                <button 
+                  onClick={handleExternalSearch} 
+                  className={styles.secondaryButton}
+                >
+                  Search Google Books 🌐
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+     
+        {!loadingLocal && localResults.length === 0 && query.trim() !== '' && externalResults.length === 0 && !loadingExternal && (
+           <div className={styles.emptyState}>
+             <h3>No results in Library</h3>
+             <p>We couldn't find "{query}" in our catalog.</p>
+             <button 
+                onClick={handleExternalSearch} 
+                className={styles.secondaryButton}
+                style={{ marginTop: '1rem' }}
+              >
+                Search External Sources
+              </button>
+           </div>
+        )}
+
+        {/* Loading External results */}
+        {loadingExternal && (
+           <div style={{textAlign:'center', padding:'2rem', color:'#666'}}>
+             <p>Searching global database...</p>
+           </div>
+        )}
+
+        {/* External links */}
+        {!loadingExternal && externalResults.length > 0 && (
+          <div className={styles.externalSection}>
+            <div className={styles.externalHeader}>
+              <h3>Online Resources</h3>
+              <p>Books found outside our library catalog:</p>
             </div>
 
             <div className={styles.resultsGrid}>
               {externalResults.map((book) => (
                 <div 
                   key={book.googleId} 
-                  className={styles.bookCard}
-                  style={{ border: '1px solid var(--accent-color)' }} // Highlight external
+                  className={`${styles.bookCard} ${styles.externalCard}`}
                 >
                   <div className={styles.cardImageWrapper}>
                     {book.thumbnail ? <img src={book.thumbnail} alt={book.title} /> : <div className={styles.noImage}>No Image</div>}
@@ -137,23 +224,11 @@ const StudentDashboard = () => {
                     <h4>{book.title}</h4>
                     <p>{book.author}</p>
                     
-                    {/* View E-Book Button */}
                     <a 
                       href={book.link} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      style={{
-                        display: 'block',
-                        marginTop: '1rem',
-                        textAlign: 'center',
-                        padding: '0.5rem',
-                        backgroundColor: 'var(--accent-color)',
-                        color: 'white',
-                        textDecoration: 'none',
-                        borderRadius: '4px',
-                        fontSize: '0.85rem',
-                        fontWeight: 'bold'
-                      }}
+                      className={styles.externalBtn}
                     >
                       View E-Book / Info ↗
                     </a>
@@ -163,17 +238,8 @@ const StudentDashboard = () => {
             </div>
           </div>
         )}
-
-        {/* SCENARIO 3: Absolutely Nothing Found */}
-        {searched && !loading && localResults.length === 0 && externalResults.length === 0 && (
-          <div style={{ textAlign: 'center', color: '#888', marginTop: '3rem', padding: '2rem', border: '2px dashed #ccc', borderRadius: '10px' }}>
-            <h3>No results found anywhere.</h3>
-            <p>Try checking your spelling or searching for a more general topic.</p>
-          </div>
-        )}
       </div>
 
-      {/* Modal for Local Books */}
       {selectedBook && (
         <StudentBookDetailModal 
           book={selectedBook} 

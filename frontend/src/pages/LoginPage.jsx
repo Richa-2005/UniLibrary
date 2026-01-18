@@ -1,22 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './LoginPage.module.css';
 import api from '../services/api';
 
 const LoginPage = () => {
-  // --- STATE ---
+  
   const [userType, setUserType] = useState('student'); // 'student' | 'admin'
   const [mode, setMode] = useState('login'); // 'login' | 'signup' (Admin only)
   
   // Form Fields
-  const [universities, setUniversities] = useState([]); // List for dropdown
-  const [selectedUniId, setSelectedUniId] = useState(''); // Selected Uni ID
+  const [universities, setUniversities] = useState([]); 
+  const [selectedUniId, setSelectedUniId] = useState(''); 
   
   const [email, setEmail] = useState('');
   const [rollNumber, setRollNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [universityName, setUniversityName] = useState(''); // For Admin Signup
+  const [universityName, setUniversityName] = useState(''); 
+  
+  // Secret Key State (Admin signup)
+  const [secretKey, setSecretKey] = useState(''); 
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -25,14 +28,11 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const auth = useAuth();
 
-  // --- FETCH UNIVERSITIES ON LOAD ---
   useEffect(() => {
     const fetchUnis = async () => {
       try {
- 
         const response = await api.get('/student/universities');
         setUniversities(response.data);
-        // Default to first option if available
         if (response.data.length > 0) {
           setSelectedUniId(response.data[0].id);
         }
@@ -43,7 +43,6 @@ const LoginPage = () => {
     fetchUnis();
   }, []);
 
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -52,28 +51,35 @@ const LoginPage = () => {
 
     try {
       if (userType === 'admin') {
-        // ADMIN FLOW 
+        
         if (mode === 'login') {
           await auth.login(email, password);
           navigate('/admin/dashboard');
-        } else {
-          await api.post('/admin/register', { name: universityName, adminEmail: email, password });
+        } 
+        else { 
+          await api.post('/admin/register', { 
+            name: universityName, 
+            adminEmail: email, 
+            password,
+            secretKey 
+          });
+          
           setSuccess('University registered! Please log in.');
           setMode('login');
+          setSecretKey(''); 
 
           const res = await api.get('/student/universities');
           setUniversities(res.data);
         }
-      } else {
-        // STUDENT FLOW 
-        // Login using the specific Student API
+      } 
+      else {
+      
         const response = await api.post('/student/login', {
           rollNumber,
           password,
           universityId: selectedUniId 
         });
 
-        
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('userRole', 'student'); 
         localStorage.setItem('studentData', JSON.stringify(response.data.user));
@@ -91,11 +97,10 @@ const LoginPage = () => {
     <div className={styles.container}>
       <div className={styles.contentWrapper}>
         
-      
         <div className={`${styles.infoSection} ${styles.glassCard}`}>
           <h1 className={styles.mainTitle}>UniLibrary</h1>
           <p className={styles.tagline}>
-            --Bridging the Stacks to the Screen.--
+            Bridging the Stacks to the Screen.
           </p>
           <p className={styles.description}>
             Welcome to the central hub where your university's entire collection comes to life. 
@@ -103,15 +108,20 @@ const LoginPage = () => {
           </p>
         </div>
         
-        
         <form className={`${styles.loginBox} ${styles.glassCard}`} onSubmit={handleSubmit}>
           
-          {/* Tabs */}
           <div className={styles.userTypeTabs}>
+
             <button 
               type="button"
               className={`${styles.typeTab} ${userType === 'student' ? styles.activeType : ''}`}
               onClick={() => setUserType('student')}
+              disabled={mode === 'signup'}
+              style={{ 
+                opacity: mode === 'signup' ? 0.5 : 1, 
+                cursor: mode === 'signup' ? 'not-allowed' : 'pointer' 
+              }}
+              title={mode === 'signup' ? "Switch to Login first" : "Student Login"}
             >
               Student
             </button>
@@ -131,15 +141,31 @@ const LoginPage = () => {
           {error && <p className={styles.error}>{error}</p>}
           {success && <p className={styles.success}>{success}</p>}
 
-          {/* --- ADMIN FIELDS --- */}
+          
           {userType === 'admin' && (
             <>
+              {/* Admin Signup */}
               {mode === 'signup' && (
-                <div className={styles.inputGroup}>
-                  <label>University Name</label>
-                  <input type="text" value={universityName} onChange={e => setUniversityName(e.target.value)} required />
-                </div>
+                <>
+                  <div className={styles.inputGroup}>
+                    <label>University Name</label>
+                    <input type="text" value={universityName} onChange={e => setUniversityName(e.target.value)} required />
+                  </div>
+                  
+                  <div className={styles.inputGroup}>
+                    <label>Master Secret Key</label>
+                    <input 
+                      type="password" 
+                      placeholder="Required for registration"
+                      value={secretKey} 
+                      onChange={e => setSecretKey(e.target.value)} 
+                      required 
+                      style={{ border: '1px solid var(--accent-color)' }}
+                    />
+                  </div>
+                </>
               )}
+              {/* Admin Login */}
               <div className={styles.inputGroup}>
                 <label>Admin Email</label>
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
@@ -147,10 +173,9 @@ const LoginPage = () => {
             </>
           )}
 
-          {/* --- STUDENT FIELDS --- */}
+          {/* Student Login */}
           {userType === 'student' && (
             <>
-              {/* 1. Select University Dropdown */}
               <div className={styles.inputGroup}>
                 <label>Select University</label>
                 <select 
@@ -166,7 +191,6 @@ const LoginPage = () => {
                 </select>
               </div>
 
-              {/* 2. Roll Number */}
               <div className={styles.inputGroup}>
                 <label>Roll Number</label>
                 <input 
@@ -180,7 +204,7 @@ const LoginPage = () => {
             </>
           )}
 
-          {/* --- PASSWORD (BOTH) --- */}
+         
           <div className={styles.inputGroup}>
             <label>Password</label>
             <input 
@@ -195,7 +219,7 @@ const LoginPage = () => {
             {loading ? 'Processing...' : (mode === 'signup' ? 'Create Account' : 'Login')}
           </button>
           
-          {/* --- TOGGLE (ADMIN ONLY) --- */}
+          {/* Admin signup toggle*/}
           {userType === 'admin' && (
             <p className={styles.toggleText}>
               {mode === 'login' ? "New University?" : "Already registered?"}

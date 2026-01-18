@@ -1,110 +1,125 @@
-/* src/pages/admin/AdminDashboard.module.css */
-
 .dashboardContainer {
-  /* Uses global layout padding, but we can add specific spacing here */
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
 }
 
-/* Header */
+.header {
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+
 .header h1 {
   font-size: 2.5rem;
-  color: var(--primary-color);
-  margin-bottom: 0.5rem;
+  margin: 0;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-brand) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .date {
-  color: var(--text-light);
-  font-size: 1rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* Stats Grid */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.5rem;
+  margin-bottom: 3rem;
 }
 
 .statCard {
-  background-color: var(--surface-color);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  border-left: 5px solid var(--primary-color); /* Nice accent line */
-  transition: transform 0.2s;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .statCard:hover {
-  transform: translateY(-3px);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-float);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--primary-brand), var(--accent-gold));
+  border-radius: 4px 0 0 4px;
 }
 
 .statCard h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--text-light);
+  font-family: 'Inter', sans-serif; 
+  font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.05em;
 }
 
 .statNumber {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--text-color);
-  margin: 0.5rem 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin: 0;
+  font-family: 'Playfair Display', serif; 
 }
 
-.statLabel {
-  font-size: 0.9rem;
-  color: var(--accent-color);
-  font-weight: 600;
-}
-
-/* Tabs */
 .tabs {
   display: flex;
-  gap: 1rem;
-  border-bottom: 2px solid var(--border-color);
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 100px;
+  width: fit-content;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 .tab {
-  background: none;
+  padding: 0.75rem 1.5rem;
   border: none;
-  padding: 1rem 1.5rem;
-  font-size: 1.1rem;
+  background: transparent;
+  color: var(--text-muted);
   font-weight: 600;
-  color: var(--text-light);
   cursor: pointer;
-  position: relative;
-  transition: color 0.2s;
+  border-radius: 100px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
 }
 
 .tab:hover {
-  color: var(--primary-color);
+  color: var(--primary-brand);
+  background: rgba(59, 130, 246, 0.05);
 }
 
 .activeTab {
-  color: var(--primary-color);
+  background: var(--primary-brand) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-/* The animated underline for the active tab */
-.activeTab::after {
-  content: '';
-  position: absolute;
-  bottom: -2px; /* Align with border-bottom */
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background-color: var(--primary-color);
-  border-radius: 2px 2px 0 0;
-}
-
-/* Content Area */
-.contentArea {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.chartContainer {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+  border: 1px solid rgba(0,0,0,0.03);
 }

@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import api from '../../../services/api';
 import styles from './AddBookSection.module.css';
 import BookDetailModal from './BookDetailModal';
+import toast from 'react-hot-toast';
 
 const AddBookSection = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [selectedBook, setSelectedBook] = useState(null); // For Modal
+  const [selectedBook, setSelectedBook] = useState(null); 
 
-  const [startIndex, setStartIndex] = useState(0); // Track how many we've loaded
-  const [hasMore, setHasMore] = useState(true); // To hide button if no more results
+  const [startIndex, setStartIndex] = useState(0); 
+  const [hasMore, setHasMore] = useState(true); 
+  const [category, setCategory] = useState('Academic'); 
   
   const fetchBooks = async (searchQuery, index, isNewSearch) => {
     setLoading(true);
@@ -63,20 +65,21 @@ const AddBookSection = () => {
 
 
   // 2. Handle Add Book (Called from Modal)
-  const handleAddBook = async (book, semester, year) => {
+  const handleAddBook = async (book, semester, year,category) => {
     try {
       await api.post('/admin/add-book', {
         googleBookId: book.googleBookId,
         semester,
-        year
+        year,
+        category
       });
       
-      alert(`Success! "${book.title}" added to Semester ${semester}.`);
+      toast.success("Book added successfully!");
       setSelectedBook(null); // Close modal
       
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Failed to add book.");
+      toast.error(err.response?.data?.error || "Failed to add book.");
     }
   };
 

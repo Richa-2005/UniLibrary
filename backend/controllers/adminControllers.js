@@ -1,17 +1,21 @@
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client'; // <-- ADD THIS
+import { PrismaClient } from '@prisma/client'; 
 import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
+
 export const adminRegister = async(req,res) =>{
     try {
-    const { name, adminEmail, password } = req.body;
+  
+    const { name, adminEmail, password, secretKey } = req.body;
 
-    //if any field empty
+    if (secretKey !== process.env.ADMIN_SECRET_KEY) {
+      return res.status(403).json({ error: "Access Denied: Invalid Secret Key." });
+    }
+
     if (!name || !adminEmail || !password) {
       return res.status(400).json({ error: 'Please provide all fields.' });
     }
 
-    //if admin already exists, using email as it is unique key
     const existingAdmin = await prisma.university.findUnique({
       where: { adminEmail: adminEmail },
     });
@@ -20,11 +24,9 @@ export const adminRegister = async(req,res) =>{
       return res.status(409).json({ error: 'Email already in use.' });
     }
 
-    //Hash the password to be stored in database securely
     const salt = await bcrypt.genSalt(10);
     const adminPasswordHash = await bcrypt.hash(password, salt);
 
-    //Create the new University (admin) //query of inserting new value
     const newUniversity = await prisma.university.create({
       data: {
         name: name,
@@ -33,7 +35,6 @@ export const adminRegister = async(req,res) =>{
       },
     });
 
-    //Send back the new university (without the password)
     res.status(201).json(newUniversity);
 
   } catch (error) {
@@ -97,12 +98,9 @@ export const loginAdmin = async(req,res) =>{
 
 export const checkIn = async (req, res) => {
   try {
-    // Because the 'protect' middleware ran, we now have 'req.user'
-    // It contains the payload from the token: { universityId: '...' }
     
     const university = await prisma.university.findUnique({
       where: { id: req.user.universityId },
-      // Don't send the password back!
       select: {
         id: true,
         name: true,
@@ -127,7 +125,7 @@ export const registerStudentByAdmin = async (req, res) => {
   }
 
   try {
-    // 1. Check if student exists IN THIS UNIVERSITY
+    // 1. Check if student exists 
     const existingStudent = await prisma.student.findFirst({
       where: {
         rollNumber,
@@ -143,7 +141,7 @@ export const registerStudentByAdmin = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // 3. Create the student linked to the Admin's University
+    // 3. Create new student linked to the Admin's University
     const newStudent = await prisma.student.create({
       data: {
         name,
@@ -172,7 +170,7 @@ export const getMyStudents = async (req, res) => {
         id: true,
         name: true,
         rollNumber: true,
-        // Don't send back the passwordHash!
+        
       }
     });
     res.status(200).json(students);

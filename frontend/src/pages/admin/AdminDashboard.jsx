@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'; 
+
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import styles from './AdminDashboard.module.css';
-//sub - sections
+
+//Tabs Components
 import AddBookSection from './components/AddBookSection';
 import InventorySection from './components/InventorySection';
 import StudentSection from './components/StudentSection';
@@ -10,9 +13,19 @@ import SettingsModal from './components/SettingsModal';
 import FinancialsSection from './components/FinancialsSection';
 
 const AdminDashboard = () => {
-  const { user } = useAuth(); //get user details
-  const [activeTab, setActiveTab] = useState('inventory'); // 'inventory' or 'add' or 'students'
-  const [stats, setStats] = useState({ totalBooks: 0, totalCopies: 0, activeLoans: 0 }); 
+  const { user } = useAuth(); 
+  const [activeTab, setActiveTab] = useState('inventory'); 
+  const [isMounted, setIsMounted] = useState(false);
+  
+  const [stats, setStats] = useState({ 
+    totalBooks: 0, 
+    totalCopies: 0, 
+    activeLoans: 0,
+    academicCount: 0,
+    novelCount: 0,
+    magazineCount: 0
+  }); 
+  
   const [showSettings, setShowSettings] = useState(false);
 
   const fetchStats = useCallback(async () => {
@@ -21,35 +34,52 @@ const AdminDashboard = () => {
       const books = response.data;
       
       const totalTitles = books.length;
-      
-      // Calculate Total Physical Copies
       const totalCopies = books.reduce((sum, book) => sum + (book.totalCopies || 0), 0);
-      
-      // Calculate Currently Available
       const currentAvailable = books.reduce((sum, book) => sum + (book.availableCopies || 0), 0);
-
-      // Active Loans = Total - Available
       const activeLoans = totalCopies - currentAvailable;
+
+      const academicCount = books.filter(b => !b.category || b.category === 'Academic').length;
+      const novelCount = books.filter(b => b.category === 'Novel').length;
+      const magazineCount = books.filter(b => b.category === 'Magazine').length;
       
-      setStats({ totalBooks: totalTitles, totalCopies, activeLoans });
+      setStats({ 
+        totalBooks: totalTitles, 
+        totalCopies, 
+        activeLoans,
+        academicCount,
+        novelCount,
+        magazineCount
+      });
+
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
   }, []);
 
-
   useEffect(() => {
     fetchStats();
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 100);
+    return () => clearTimeout(timer);
   }, [fetchStats]);
+
+  const colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444'];
+
+  const chartData = [
+    { name: 'Academic', count: stats.academicCount },
+    { name: 'Novels', count: stats.novelCount },
+    { name: 'Magazines', count: stats.magazineCount },
+    { name: 'Loans', count: stats.activeLoans }
+  ];
+
   return (
     <div className={styles.dashboardContainer}>
       
       <header className={styles.header}>
         <h1>Welcome, {user?.name || 'User'}</h1>
         <p className={styles.date}>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p> 
-        {/* date */}
       </header>
-
     
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
@@ -68,8 +98,35 @@ const AdminDashboard = () => {
           <span className={styles.statLabel}>Students with books</span>
         </div>
       </div>
+      
+      {/* Library chart */}
+      <div className={styles.chartContainer}>
+        <h3>Library Composition</h3>
 
-  
+        <div className={styles.chartWrap}>
+          {stats.totalBooks > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', color:'#999' }}>
+              No data to display
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      
       <div className={styles.tabs}>
         <button 
           className={`${styles.tab} ${activeTab === 'inventory' ? styles.activeTab : ''}`}

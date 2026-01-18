@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import styles from './InventorySection.module.css';
 import EditBookModal from './EditBookModal';
 import IssueBookModal from './IssueBookModal';
-import ReturnBookModal from './ReturnBookModal';
 import ActiveBorrowersModal from './ActiveBorrowersModal';
+import toast from 'react-hot-toast';
 
 const InventorySection = ({ onInventoryUpdate }) => {
   const [books, setBooks] = useState([]);
@@ -16,7 +16,7 @@ const InventorySection = ({ onInventoryUpdate }) => {
   const [issueModalBook, setIssueModalBook] = useState(null);
   const [returnModalBook, setReturnModalBook] = useState(null);
 
-  // 1. Fetch Books
+  // Fetch Books
   useEffect(() => {
     loadBooks();
   }, []);
@@ -34,7 +34,7 @@ const InventorySection = ({ onInventoryUpdate }) => {
     }
   };
 
-  // 2. Search Filter
+  // Search Filter
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
@@ -46,11 +46,11 @@ const InventorySection = ({ onInventoryUpdate }) => {
     setFilteredBooks(filtered);
   };
 
-  // 3. Handle Delete
-  const handleDelete = async (book) => {
-    // CHECK 1: Are all copies accounted for?
+  // Handle Delete
+  const handleDelete = (book) => {
+   
     if (book.availableCopies !== book.totalCopies) {
-      alert(
+      toast.error(
         `Cannot delete "${book.title}".\n\n` +
         `You have ${book.totalCopies - book.availableCopies} cop(ies) currently issued or missing.\n` +
         `All copies must be returned/available before deleting a book entry.`
@@ -58,24 +58,73 @@ const InventorySection = ({ onInventoryUpdate }) => {
       return; 
     }
 
-    // CHECK 2: Confirmation
-    if (!window.confirm(`Are you sure you want to remove "${book.title}" from your library?`)) return;
 
-    try {
-      await api.delete(`/admin/my-books/${book.libraryEntryId}`);
+   toast((t) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <p style={{ margin: 0, fontWeight: 500 }}>
+        Delete <b>"{book.title}"</b>?
+      </p>
+      <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
+        
+        <button 
+          onClick={() => toast.dismiss(t.id)}
+          style={{ 
+            padding: '6px 12px', 
+            border: '1px solid #ccc', 
+            borderRadius: '4px', 
+            background: 'white', 
+            cursor: 'pointer' 
+          }}
+        >
+          Cancel
+        </button>
+
       
-     
-      const updatedList = books.filter(b => b.libraryEntryId !== book.libraryEntryId);
-      setBooks(updatedList);
-      setFilteredBooks(updatedList);
-      if (onInventoryUpdate) onInventoryUpdate();
-      alert('Book removed.');
-    } catch (error) {
-      alert(error.response?.data?.error || 'Failed to delete book.');
-    }
-  };
+        <button 
+          onClick={() => {
+            performDelete(book); // Call the actual delete function
+            toast.dismiss(t.id); // Close the toast
+          }}
+          style={{ 
+            padding: '6px 12px', 
+            border: 'none', 
+            borderRadius: '4px', 
+            background: '#ef4444', 
+            color: 'white', 
+            cursor: 'pointer' 
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  ), {
+    duration: 5000,
+    position: 'top-center',
+    style: {
+      border: '1px solid #ef4444',
+      padding: '16px',
+    },
+  });
+};
 
-  // 4. Handle Full Update (Modal)
+    
+    const performDelete = async (book) => {
+      try {
+        await api.delete(`/admin/my-books/${book.libraryEntryId}`);
+        
+        const updatedList = books.filter(b => b.libraryEntryId !== book.libraryEntryId);
+        setBooks(updatedList);
+        setFilteredBooks(updatedList);
+        if (onInventoryUpdate) onInventoryUpdate();
+        
+        toast.success('Book removed successfully');
+      } catch (error) {
+        toast.error(error.response?.data?.error || 'Failed to delete book.');
+      }
+    };
+
+  
   const handleSaveUpdate = async (id, updatedData) => {
     try {
       await api.put(`/admin/my-books/${id}`, updatedData);
@@ -84,12 +133,12 @@ const InventorySection = ({ onInventoryUpdate }) => {
       if (onInventoryUpdate) onInventoryUpdate();
     } catch (error) {
       console.error(error);
-      alert('Failed to update book.');
+      toast.error('Failed to update book.');
     }
   };
 
  
-  const [activeBorrowersModalBook, setActiveBorrowersModalBook] = useState(null); // Rename returnModalBook to this
+  const [activeBorrowersModalBook, setActiveBorrowersModalBook] = useState(null); 
 
 
 const handleStockClick = (book, change) => {
@@ -108,12 +157,12 @@ const handleStockClick = (book, change) => {
         libraryEntryId: entryId,
         rollNumber
       });
-      alert("Book Returned Successfully!");
+      toast.success("Book Returned Successfully!");
       setReturnModalBook(null);
       if (onInventoryUpdate) onInventoryUpdate();
       loadBooks();
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to return book.");
+      toast.error(err.response?.data?.error || "Failed to return book.");
     }
   };
 
@@ -125,12 +174,12 @@ const handleStockClick = (book, change) => {
         rollNumber,
         dueDate
       });
-      alert("Book Issued Successfully!");
+      toast.success("Book Issued Successfully!");
       setIssueModalBook(null);
       if (onInventoryUpdate) onInventoryUpdate();
       loadBooks();
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to issue book.");
+      toast.error(err.response?.data?.error || "Failed to issue book.");
     }
   };
 
@@ -164,9 +213,11 @@ const handleStockClick = (book, change) => {
               <tr><td colSpan="4" className={styles.empty}>No books match.</td></tr>
             ) : (
               filteredBooks.map((book) => {
-                // Determine Status Logic
                 const isAvailable = book.availableCopies > 0;
                 
+                // Check category to decide what to show in the 2nd column
+                const isAcademic = book.category === 'Academic' || !book.category;
+
                 return (
                   <tr key={book.libraryEntryId}>
                     <td className={styles.titleCol}>
@@ -175,10 +226,16 @@ const handleStockClick = (book, change) => {
                     </td>
                     
                     <td>
-                      <div className={styles.tagGroup}>
-                        <span className={styles.tag}>S{book.semester}</span>
-                        <span className={styles.tag}>Y{book.year}</span>
-                      </div>
+                      {isAcademic ? (
+                        <div className={styles.tagGroup}>
+                          <span className={styles.tag}>S{book.semester}</span>
+                          <span className={styles.tag}>Y{book.year}</span>
+                        </div>
+                      ) : (
+                        <span className={styles.tag} style={{ background: '#e0f2fe', color: '#0369a1' }}>
+                          {book.category}
+                        </span>
+                      )}
                     </td>
 
                    

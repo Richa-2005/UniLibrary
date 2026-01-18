@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import styles from './BookDetailModal.module.css'; // Re-using modal styles
+import { useState } from 'react';
+import styles from './Transactional.module.css'; 
+import toast from 'react-hot-toast';
 
 const IssueBookModal = ({ book, onClose, onConfirm }) => {
   const [rollNumber, setRollNumber] = useState('');
@@ -7,8 +8,7 @@ const IssueBookModal = ({ book, onClose, onConfirm }) => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!rollNumber || !dueDate) return alert("Please fill all fields");
-    
+    if (!rollNumber || !dueDate) return toast.error("Please fill all fields");
     setLoading(true);
     await onConfirm(book.libraryEntryId, rollNumber, dueDate);
     setLoading(false);
@@ -16,45 +16,28 @@ const IssueBookModal = ({ book, onClose, onConfirm }) => {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()} style={{maxWidth: '500px'}}>
+      <div className={`${styles.modalContainer} ${styles.modalSmall}`} onClick={e => e.stopPropagation()}>
         <button className={styles.closeButton} onClick={onClose}>&times;</button>
         
-        <div style={{ padding: '2rem' }}>
+        <div className={styles.header}>
           <h2 className={styles.title}>Issue Book</h2>
-          <p className={styles.author}>{book.title}</p>
-          <hr className={styles.divider} />
+          <p className={styles.subtitle}>{book.title}</p>
+        </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label style={{fontWeight: 'bold', display:'block', marginBottom:'0.5rem'}}>Student Roll Number</label>
-              <input 
-                type="text" 
-                value={rollNumber}
-                onChange={e => setRollNumber(e.target.value)}
-                style={{width: '100%', padding: '0.8rem', border: '1px solid #ccc', borderRadius: '6px'}}
-                placeholder="e.g. 2K23/CS/01"
-              />
-            </div>
-
-            <div>
-              <label style={{fontWeight: 'bold', display:'block', marginBottom:'0.5rem'}}>Due Date</label>
-              <input 
-                type="date" 
-                value={dueDate}
-                onChange={e => setDueDate(e.target.value)}
-                style={{width: '100%', padding: '0.8rem', border: '1px solid #ccc', borderRadius: '6px'}}
-              />
-            </div>
-
-            <button 
-              className={styles.addButton}
-              onClick={handleSubmit}
-              disabled={loading}
-              style={{marginTop: '1rem'}}
-            >
-              {loading ? 'Issuing...' : 'Confirm Issue'}
-            </button>
+        <div className={styles.body}>
+          <div className={styles.inputGroup}>
+            <label>Student Roll Number</label>
+            <input type="text" value={rollNumber} onChange={e => setRollNumber(e.target.value)} placeholder="e.g. 2K23/CS/01" />
           </div>
+
+          <div className={styles.inputGroup}>
+            <label>Due Date</label>
+            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
+          </div>
+
+          <button className={styles.primaryBtn} onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Issuing...' : 'Confirm Issue'}
+          </button>
         </div>
       </div>
     </div>

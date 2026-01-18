@@ -8,14 +8,14 @@ export const protect = (req, res, next) => {
   // 1. Check for the token in the 'Authorization' header
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
-      // 2. Get token from header (it looks like "Bearer <token>")
+      // 2. Get token from header 
       token = req.headers.authorization.split(' ')[1];
 
       // 3. Verify the token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // 4. Attach the user's data to the request object
-      // This payload is what we put in at login: { universityId: '...' }
+      
       req.user = decoded; 
 
       // 5. Call the next middleware/route handler

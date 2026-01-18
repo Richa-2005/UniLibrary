@@ -14,22 +14,20 @@ const StudentProfileSidebar = ({ isOpen, onClose, student, onLogout }) => {
   }, [isOpen]);
   return (
     <>
-      {/* Backdrop */}
+
       <div 
         className={`${styles.backdrop} ${isOpen ? styles.backdropOpen : ''}`} 
         onClick={onClose}
       />
 
-      {/* Sidebar Panel */}
+    
       <div className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
         
-        {/* Header */}
         <div className={styles.header}>
           <h2>Student Profile</h2>
           <button onClick={onClose} className={styles.closeButton}>&times;</button>
         </div>
 
-        {/* Content */}
         <div className={styles.content}>
           <div className={styles.avatarCircle}>
             {student?.name ? student.name.charAt(0).toUpperCase() : 'S'}
@@ -49,7 +47,7 @@ const StudentProfileSidebar = ({ isOpen, onClose, student, onLogout }) => {
             <label>University</label>
             <p>{student?.universityName || 'N/A'}</p>
           </div>
-          <hr style={{ width: '100%', border: '0', borderTop: '1px solid #ddd', margin: '1.5rem 0' }} />
+          
           
           {/* Borrowed Books List */}
           <div style={{ width: '100%' }}>

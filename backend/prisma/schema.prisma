@@ -1,4 +1,3 @@
-// This is your Prisma schema file
 
 datasource db {
   provider = "postgresql" // We're using PostgreSQL
@@ -47,7 +46,6 @@ model Book {
   author String
   isbn   String @unique // ISBN-13 or ISBN-10
   
-  // This is the "magic" column for API data
   // It stores the raw JSON from Google Books (cover, description, etc.)
   metadata Json?  
   
@@ -56,34 +54,27 @@ model Book {
   libraryEntries LibraryEntry[]
 }
 
-// This is the *most important* table.
+
 // It connects a University to a Book.
 model LibraryEntry {
   id       String @id @default(cuid())
   
-  // --- Relationships ---
-  // It belongs to ONE University
-  university   University @relation(fields: [universityId], references: [id])
-  universityId String
-  // It references ONE Book
-  book         Book       @relation(fields: [bookId], references: [id])
-  bookId       String
+  university    University @relation(fields: [universityId], references: [id])
+  universityId  String
+  book          Book       @relation(fields: [bookId], references: [id])
+  bookId        String
   
-  // --- Data for this specific library's book ---
-  semester Int? // e.g., 5
-  year     Int? // e.g., 3
+  category      String  @default("Academic") 
+
+  semester      Int?    // Can be null for Novels
+  year          Int?    // Can be null for Novels
   
-  // Manages inventory
   totalCopies     Int @default(1)
   availableCopies Int @default(1)
+  price           Float    @default(0.0)
   
-  price          Float    @default(0.0)
-  
-  // --- Relationships ---
-  // This entry can be borrowed many times
   borrowedRecords BorrowedRecord[]
   
-  // Ensures a university can't add the same book twice
   @@unique([universityId, bookId])
 }
 
@@ -97,7 +88,7 @@ model BorrowedRecord {
   dueDate        DateTime
   returnedAt     DateTime?
 
-  // --- NEW FINANCIAL FIELDS ---
+  // FINANCIAL FIELDS 
   status         String       @default("returned") // 'returned', 'damaged', 'lost'
   fineAmount     Float        @default(0.0)        // Overdue fine collected
   damageAmount   Float        @default(0.0)        // Damage charge collected

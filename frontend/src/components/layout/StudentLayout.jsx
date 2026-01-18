@@ -1,10 +1,10 @@
 import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import StudentNavbar from './StudentNavbar';
-import styles from './DashboardLayout.module.css'; // Re-use layout styles
+import styles from './DashboardLayout.module.css'; 
 
 const StudentLayout = () => {
-  // Simple check: Do we have a token and are we a student?
+  
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('userRole');
 

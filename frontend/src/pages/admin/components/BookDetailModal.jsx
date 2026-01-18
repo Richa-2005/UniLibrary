@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styles from './BookDetailModal.module.css';
 
 const BookDetailModal = ({ book, onClose, onAdd }) => {
-  // State for the specific inventory details admin needs to add
+  const [category, setCategory] = useState('Academic'); 
   const [semester, setSemester] = useState('');
   const [year, setYear] = useState('');
   const [adding, setAdding] = useState(false);
 
   const handleConfirm = async () => {
     setAdding(true);
-    // Pass the extra data back to the parent component
-    await onAdd(book, semester, year);
+    await onAdd(book, semester, year, category);
     setAdding(false);
   };
 
@@ -18,13 +17,10 @@ const BookDetailModal = ({ book, onClose, onAdd }) => {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      {/* Stop click from closing when clicking inside the modal */}
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
         <button className={styles.closeButton} onClick={onClose}>&times;</button>
         
         <div className={styles.content}>
-          {/* Left: Image */}
           <div className={styles.imageContainer}>
             {book.thumbnail ? (
               <img src={book.thumbnail} alt={book.title} className={styles.coverImage} />
@@ -33,7 +29,6 @@ const BookDetailModal = ({ book, onClose, onAdd }) => {
             )}
           </div>
 
-          {/* Right: Details & Form */}
           <div className={styles.details}>
             <h2 className={styles.title}>{book.title}</h2>
             <p className={styles.author}>by {book.authors}</p>
@@ -42,40 +37,45 @@ const BookDetailModal = ({ book, onClose, onAdd }) => {
             <hr className={styles.divider} />
             
             <div className={styles.formSection}>
-              <h3>Add to Library Inventory</h3>
-              <p className={styles.instruction}>Assign this book to a specific semester and year.</p>
+              <h3>Add to Inventory</h3>
               
-              <div className={styles.inputRow}>
-                <div className={styles.inputGroup}>
-                  <label>Semester</label>
-                  <input 
-                    type="number" 
-                    min="1" 
-                    max="8" 
-                    placeholder="e.g. 5"
-                    value={semester}
-                    onChange={(e) => setSemester(e.target.value)}
-                  />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>Academic Year</label>
-                  <input 
-                    type="number" 
-                    min="1" 
-                    max="4" 
-                    placeholder="e.g. 3"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                  />
-                </div>
+              <div className={styles.inputGroup}>
+                <label>Category</label>
+                <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                  <option value="Academic">Academic (Subject Book)</option>
+                  <option value="Novel">Novel / General Interest</option>
+                  <option value="Magazine">Magazine / Journal</option>
+                </select>
               </div>
+
+              {category === 'Academic' && (
+                <>
+                  <p className={styles.instruction}>Assign specific semester and year.</p>
+                  <div className={styles.inputRow}>
+                    <div className={styles.inputGroup}>
+                      <label>Semester</label>
+                      <input 
+                        type="number" min="1" max="8" placeholder="e.g. 5"
+                        value={semester} onChange={(e) => setSemester(e.target.value)}
+                      />
+                    </div>
+                    <div className={styles.inputGroup}>
+                      <label>Year</label>
+                      <input 
+                        type="number" min="1" max="4" placeholder="e.g. 3"
+                        value={year} onChange={(e) => setYear(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               <button 
                 className={styles.addButton} 
                 onClick={handleConfirm}
-                disabled={adding || !semester}
+                disabled={adding || (category === 'Academic' && (!semester || !year))}
               >
-                {adding ? 'Adding...' : 'Confirm & Add to Library'}
+                {adding ? 'Adding...' : 'Confirm & Add'}
               </button>
             </div>
           </div>
