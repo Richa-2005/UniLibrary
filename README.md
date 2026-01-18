@@ -1,40 +1,43 @@
 # UniLibrary 📚
 
-UniLibrary is a modern, full-stack library management system designed to bridge the gap between university resources and student needs. It features a dual-interface for Administrators to manage inventory and Students to discover resources.
+> **Bridging the Stacks to the Screen.**
 
-## 🚀 Features
+UniLibrary is a full-stack Library Management System designed to modernize university resource tracking. It replaces manual registers with a real-time digital dashboard, featuring a dual-interface for Administrators (Inventory & Financials) and Students (Discovery & Access).
 
-### 👨‍💼 For University Admins
-* **Smart Inventory:** Add books instantly by searching the **Google Books API** (no manual typing required).
-* **Stock Management:** Track total vs. available copies.
-* **Issue & Return:** Manage book loans with student Roll Numbers; system automatically prevents deleting books that are currently issued.
-* **Student Management:** Register students and assign credentials.
-* **Dashboard:** Real-time statistics on total titles, copies, and active loans.
+Built with the **PostgreSQL,Prisma**  and designed with a custom **Glassmorphism UI**.
+
+## 🚀 Key Features
+
+### 🏛️ For University Admins
+* **Smart Inventory Acquisition:** Integrated **Google Books API** allows admins to add books instantly without manual data entry.
+* **Circulation Control:** Streamlined **Issue/Return workflows** with conflict detection (prevents deleting issued books).
+* **Automated Financials:** The system automatically calculates **Overdue Fines**, tracks **Damage Charges**, and manages **Lost Book Fees** during the return process.
+* **Role-Based Dashboard:** Real-time visualization of library composition (Academic vs. Novels) and active loan statistics.
+* **Secure Student Registry:** Admin-controlled student registration and directory management.
 
 ### 🎓 For Students
-* **University-Specific Login:** Secure access linked to their specific university.
-* **Live Availability:** Instantly see if a book is "Available" or "Out of Stock".
-* **Smart Search:** Search by title, author, or ISBN with instant results.
-* **Semester Filtering:** Filter the catalog to find relevant course materials.
-* **E-Book Fallback:** If a book isn't in the library, the system automatically fetches and displays **Google Books preview links** so students are never left without resources.
-* **Personal Profile:** Slide-out sidebar showing current borrowed books and due dates.
+* **Hybrid Search Engine:** Prioritizes local physical inventory but automatically falls back to **External E-Book Resources** if a book is unavailable physically.
+* **Real-Time Availability:** Instantly see stock levels ("Available" vs "Out of Stock") before visiting the library.
+* **Semester Filtering:** Dedicated filters to find curriculum-specific academic books quickly.
+* **Profile & Tracking:** A slide-out sidebar to track active loans and upcoming due dates.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack & Engineering Decisions
 
-**Frontend:**
-* React (Vite)
-* CSS Modules (Glassmorphism UI)
-* Axios (API Consumption)
-* React Router DOM
+### **Frontend**
+* **React.js (Vite):** Fast, component-based UI.
+* **CSS Modules:** Utilized for a custom "Modern Academia" design system, ensuring scoped styling and preventing class conflicts.
+* **Recharts:** For data visualization in the Admin Dashboard.
+* **Axios Interceptors:** Handles secure JWT token transmission automatically.
 
-**Backend:**
-* Node.js & Express
-* **PostgreSQL** (Relational Database)
-* **Prisma ORM** (Schema & Queries)
-* JSON Web Tokens (JWT) for Authentication
-* Bcrypt (Password Hashing)
+### **Backend**
+* **Node.js & Express:** RESTful API architecture.
+* **PostgreSQL (via Prisma ORM):** chosen for relational data integrity (ensuring books/students are linked correctly).
+* **Security:**
+    * **Bcrypt:** Industry-standard password hashing.
+    * **JWT:** Stateless authentication for secure session management.
+    * **Admin Keys:** Secret-key protection for university registration endpoints.
 
 ---
 
@@ -81,7 +84,7 @@ A secure, unified login interface featuring a glassmorphism UI. Supports distinc
 
 ### 2. Admin Command Center
 The central hub for librarians. Features real-time statistics on inventory and active loans, along with a comprehensive table for managing book stock and details.
-![Admin Dashboard](./screenshots/admin-inventory.png)
+![Admin Dashboard](./screenshots/admin-dash.png)
 
 ### 3. API-Driven Book Acquisition
 Admins can instantly populate the library catalog by searching the **Google Books API**. This fetches high-quality metadata (covers, descriptions, authors) automatically.
@@ -92,19 +95,21 @@ A dedicated section for Admins to register new students and view the complete di
 ![Manage Students](./screenshots/add-student.png)
 
 ### 5. Granular Inventory Control
-Admins can edit specific details for any book in their collection, including updating total stock counts, semesters, and academic years to keep data accurate.
+Admins can edit specific details for any book in their collection, including updating total stock counts, semesters, and academic years, price to keep data accurate.
+![Admin Manage Inventory](./screenshots/admin-inventory.png)
 ![Edit Book Details](./screenshots/edit-book.png)
 
 ### 6. Streamlined Book Issuing
 The "Issue" workflow allows Admins to quickly assign a book to a student using their Roll Number and a custom Due Date, automatically reducing available stock.
 ![Issue Book Modal](./screenshots/issue-book.png)
 
-### 7. Efficient Return Processing
-The "Return" workflow closes the loop by verifying the student's active loan and instantly restoring the book's availability status in the database.
-![Return Book Modal](./screenshots/return-book.png)
+### 7. Smart Return & Financials
+The return modal automatically calculates fines based on overdue days. It handles complex scenarios like "Book Damaged" or "Book Lost" with dynamic fee adjustments.
+![Return Modal](./screenshots/return-book.png)
+![Liabrary Financials](./screenshots/financial.png)
 
-### 8. Student Discovery & Availability
-Students can browse the university's specific catalog, filter by semester, and check the **real-time availability** of physical copies before heading to the library.
+### 8. Student Discovery Interface
+Students can browse the university's catalog, filter by semester, and check **real-time availability** of physical copies.
 ![Student Search](./screenshots/student-search.png)
 
 ### 9. Smart E-Book Fallback
