@@ -205,6 +205,58 @@
   text-decoration: underline;
 }
 
+.demoBox {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+}
+
+.demoTitle {
+  margin: 0 0 0.4rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.demoNote {
+  margin: 0 0 0.8rem 0;
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.demoCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+
+.demoCard p {
+  margin: 0.25rem 0;
+  font-size: 0.92rem;
+  color: #334155;
+}
+
+.demoFillButton {
+  margin-top: 0.75rem;
+  padding: 0.55rem 0.9rem;
+  border: none;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.demoFillButton:hover {
+  background: #2563eb;
+}
+
 @media (max-width: 900px) {
   .contentWrapper {
     grid-template-columns: 1fr;

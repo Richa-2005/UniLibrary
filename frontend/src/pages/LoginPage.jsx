@@ -43,6 +43,27 @@ const LoginPage = () => {
     fetchUnis();
   }, []);
 
+  const fillAdminDemo = () => {
+  setUserType('admin');
+  setMode('login');
+  setEmail('demo_abc@gmail.com');
+  setPassword('Demo@123');
+};
+
+const fillStudentDemo = () => {
+  setUserType('student');
+  setRollNumber('37');
+  setPassword('Student@123');
+
+  const demoUni = universities.find(
+    (uni) => uni.name.toLowerCase() === 'ABC'
+  );
+
+  if (demoUni) {
+    setSelectedUniId(demoUni.id);
+  }
+};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -170,6 +191,15 @@ const LoginPage = () => {
                 <label>Admin Email</label>
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
               </div>
+              <div className={styles.inputGroup}>
+  <label>Password</label>
+  <input
+    type="password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    required
+  />
+</div>
             </>
           )}
 
@@ -201,23 +231,61 @@ const LoginPage = () => {
                   required 
                 />
               </div>
+
+              <div className={styles.inputGroup}>
+  <label>Password</label>
+  <input
+    type="password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    required
+  />
+</div>
             </>
           )}
 
          
-          <div className={styles.inputGroup}>
-            <label>Password</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={e => setPassword(e.target.value)} 
-              required 
-            />
-          </div>
+          {mode === 'login' && (
+  <div className={styles.demoBox}>
+    <h3 className={styles.demoTitle}>Demo Access</h3>
+    <p className={styles.demoNote}>
+      Use demo credentials to explore the platform without registration.
+    </p>
 
-          <button type="submit" className={styles.loginButton} disabled={loading}>
-            {loading ? 'Processing...' : (mode === 'signup' ? 'Create Account' : 'Login')}
-          </button>
+    {userType === 'admin' ? (
+      <div className={styles.demoCard}>
+        <p><strong>Admin Demo</strong></p>
+        <p>Email: demo_abc@gmail.com</p>
+        <p>Password: Demo@123</p>
+        <button
+          type="button"
+          className={styles.demoFillButton}
+          onClick={fillAdminDemo}
+        >
+          Use Admin Demo
+        </button>
+      </div>
+    ) : (
+      <div className={styles.demoCard}>
+        <p><strong>Student Demo</strong></p>
+        <p>University: ABC</p>
+        <p>Roll Number: 37</p>
+        <p>Password: Student@123</p>
+        <button
+          type="button"
+          className={styles.demoFillButton}
+          onClick={fillStudentDemo}
+        >
+          Use Student Demo
+        </button>
+      </div>
+    )}
+  </div>
+)}
+
+<button type="submit" className={styles.loginButton} disabled={loading}>
+  {loading ? 'Processing...' : (mode === 'signup' ? 'Create Account' : 'Login')}
+</button>
           
           {/* Admin signup toggle*/}
           {userType === 'admin' && (
