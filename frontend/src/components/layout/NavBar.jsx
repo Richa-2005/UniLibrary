@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import ProfileSidebar from './ProfileSidebar';
-import styles from './Navbar.module.css';
+import styles from './NavBar.module.css';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
