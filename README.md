@@ -120,6 +120,38 @@ If a book is not available in the university's physical collection, the system i
 A slide-out sidebar provides quick access to user details and a dynamic list of **currently borrowed books** with their respective due dates.
 ![Profile Sidebar](./screenshots/profile-sidebar.png)
 
+## 🚀 Live Demo Access
+
+To allow reviewers to explore the system without creating a university account, demo credentials are provided below.
+
+### Admin Demo
+- Email: demo_abc@unilibrary.com
+- Password: Demo@123
+
+Admin access allows exploration of:
+- Inventory management
+- Book issue/return workflows
+- Dashboard statistics
+- Fine calculation system
+
+### Student Demo
+- University : ABC
+- Roll Numer : 37
+- Password: Student@123
+
+Student access allows exploration of:
+- Book search and discovery
+- Real-time availability status
+- Borrowed books tracking
+- Profile and loan history
+
+---
+
+### 🔒 Note
+University registration is protected by an **admin key** to prevent unauthorized institutions from being created.  
+
+The demo accounts are seeded for evaluation purposes and operate within a restricted environment that does not affect real data.
+
 ## 🛡️ License
 
 This project is open-source and available under the [MIT License](LICENSE).
